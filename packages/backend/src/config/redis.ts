@@ -1,10 +1,14 @@
 import { createClient } from 'redis';
+import { getOptionalSecret } from './secrets';
+
+const redisPassword = getOptionalSecret('REDIS_PASSWORD');
 
 const redisClient = createClient({
   socket: {
     host: process.env.REDIS_HOST || 'localhost',
     port: parseInt(process.env.REDIS_PORT || '6379'),
   },
+  password: redisPassword,
 });
 
 redisClient.on('error', (err) => console.error('Redis Client Error', err));

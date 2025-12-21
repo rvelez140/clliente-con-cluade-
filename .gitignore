@@ -28,6 +28,13 @@ release/
 
 # Archivos de secretos (no subir al repositorio)
 SECRETS.md
+secrets/*.txt
+secrets/db_password.txt
+secrets/redis_password.txt
+secrets/jwt_secret.txt
+secrets/gemini_api_key.txt
+secrets/gmail_client_secret.txt
+secrets/microsoft_client_secret.txt
 
 # VPS deployment files
 backups/
@@ -35,3 +42,5 @@ logs/
 *.sql
 *.sql.gz
 .env.production
+certbot/
+nginx-logs/
