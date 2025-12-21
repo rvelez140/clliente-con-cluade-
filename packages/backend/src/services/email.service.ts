@@ -25,20 +25,26 @@ export class EmailService {
 
           fetch.on('message', (msg) => {
             msg.on('body', (stream) => {
-              simpleParser(stream, async (err: Error | null, parsed: ParsedMail) => {
+              simpleParser(stream as any, async (err: Error | null, parsed: ParsedMail) => {
                 if (err) {
                   console.error('Error parsing email:', err);
                   return;
                 }
+
+                const getAddresses = (obj: any) => {
+                  if (!obj) return [];
+                  if (Array.isArray(obj)) return obj.flatMap((o: any) => o.value?.map((t: any) => t.address || '') || []);
+                  return obj.value?.map((t: any) => t.address || '') || [];
+                };
 
                 const email: Email = {
                   id: parsed.messageId || '',
                   accountId: account.id,
                   messageId: parsed.messageId || '',
                   from: parsed.from?.text || '',
-                  to: parsed.to?.value.map((t: any) => t.address || '') || [],
-                  cc: parsed.cc?.value.map((t: any) => t.address || ''),
-                  bcc: parsed.bcc?.value.map((t: any) => t.address || ''),
+                  to: getAddresses(parsed.to),
+                  cc: getAddresses(parsed.cc),
+                  bcc: getAddresses(parsed.bcc),
                   subject: parsed.subject || '',
                   body: parsed.text || '',
                   htmlBody: parsed.html ? parsed.html.toString() : undefined,
