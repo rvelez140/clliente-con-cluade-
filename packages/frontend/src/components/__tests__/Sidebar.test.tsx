@@ -5,7 +5,7 @@ import Sidebar from '../Sidebar';
 
 const MockedSidebar = () => (
   <BrowserRouter>
-    <Sidebar />
+    <Sidebar onCompose={vi.fn()} />
   </BrowserRouter>
 );
 

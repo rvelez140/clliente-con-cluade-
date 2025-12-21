@@ -7,6 +7,8 @@ interface AuthContextType {
   loading: boolean;
   login: (email: string, password: string) => Promise<void>;
   register: (email: string, password: string, name: string) => Promise<void>;
+  loginWithGoogle: () => Promise<void>;
+  loginWithMicrosoft: () => Promise<void>;
   logout: () => void;
 }
 
@@ -48,13 +50,25 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     setUser(response.data.user);
   };
 
+  const loginWithGoogle = async () => {
+    // Redirigir al endpoint de autenticación de Google
+    const backendUrl = import.meta.env.VITE_API_URL || 'http://localhost:3000';
+    window.location.href = `${backendUrl}/auth/google`;
+  };
+
+  const loginWithMicrosoft = async () => {
+    // Redirigir al endpoint de autenticación de Microsoft
+    const backendUrl = import.meta.env.VITE_API_URL || 'http://localhost:3000';
+    window.location.href = `${backendUrl}/auth/microsoft`;
+  };
+
   const logout = () => {
     localStorage.removeItem('token');
     setUser(null);
   };
 
   return (
-    <AuthContext.Provider value={{ user, loading, login, register, logout }}>
+    <AuthContext.Provider value={{ user, loading, login, register, loginWithGoogle, loginWithMicrosoft, logout }}>
       {children}
     </AuthContext.Provider>
   );
