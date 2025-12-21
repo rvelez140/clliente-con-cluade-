@@ -53,6 +53,7 @@ describe('Auth Routes', () => {
         .expect(400);
 
       expect(response.body).toHaveProperty('error');
+      expect(response.body.error).toContain('requeridos');
     });
 
     it('should return 400 if password is missing', async () => {
@@ -65,6 +66,20 @@ describe('Auth Routes', () => {
         .expect(400);
 
       expect(response.body).toHaveProperty('error');
+      expect(response.body.error).toContain('requeridos');
+    });
+
+    it('should return 400 if name is missing', async () => {
+      const response = await request(app)
+        .post('/auth/register')
+        .send({
+          email: 'test@example.com',
+          password: 'password123',
+        })
+        .expect(400);
+
+      expect(response.body).toHaveProperty('error');
+      expect(response.body.error).toContain('requeridos');
     });
 
     it('should return 400 if user already exists', async () => {
@@ -140,6 +155,7 @@ describe('Auth Routes', () => {
         .expect(400);
 
       expect(response.body).toHaveProperty('error');
+      expect(response.body.error).toContain('requeridos');
     });
 
     it('should return 400 if password is missing', async () => {
@@ -151,6 +167,7 @@ describe('Auth Routes', () => {
         .expect(400);
 
       expect(response.body).toHaveProperty('error');
+      expect(response.body.error).toContain('requeridos');
     });
   });
 
