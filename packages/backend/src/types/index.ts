@@ -10,7 +10,7 @@ export interface User {
 export interface EmailAccount {
   id: string;
   userId: string;
-  provider: 'gmail' | 'outlook' | 'custom';
+  provider: 'gmail' | 'outlook' | 'yahoo' | 'protonmail' | 'custom';
   email: string;
   imapHost?: string;
   imapPort?: number;
@@ -64,7 +64,7 @@ export interface Attachment {
 export interface UserSettings {
   id: string;
   userId: string;
-  theme: 'gmail' | 'outlook';
+  theme: 'gmail' | 'outlook' | 'yahoo';
   language: string;
   signature?: string;
   autoReply?: boolean;

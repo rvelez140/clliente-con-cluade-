@@ -131,6 +131,24 @@ export class EmailService {
         tls: true,
         tlsOptions: { rejectUnauthorized: false },
       };
+    } else if (account.provider === 'yahoo') {
+      return {
+        user: account.email,
+        password: account.password,
+        host: 'imap.mail.yahoo.com',
+        port: 993,
+        tls: true,
+        tlsOptions: { rejectUnauthorized: false },
+      };
+    } else if (account.provider === 'protonmail') {
+      return {
+        user: account.email,
+        password: account.password,
+        host: 'imap.protonmail.ch',
+        port: 993,
+        tls: true,
+        tlsOptions: { rejectUnauthorized: false },
+      };
     } else {
       return {
         user: account.email,
@@ -157,6 +175,26 @@ export class EmailService {
     } else if (account.provider === 'outlook') {
       return {
         host: 'smtp.office365.com',
+        port: 587,
+        secure: false,
+        auth: {
+          user: account.email,
+          pass: account.password,
+        },
+      };
+    } else if (account.provider === 'yahoo') {
+      return {
+        host: 'smtp.mail.yahoo.com',
+        port: 587,
+        secure: false,
+        auth: {
+          user: account.email,
+          pass: account.password,
+        },
+      };
+    } else if (account.provider === 'protonmail') {
+      return {
+        host: 'smtp.protonmail.ch',
         port: 587,
         secure: false,
         auth: {

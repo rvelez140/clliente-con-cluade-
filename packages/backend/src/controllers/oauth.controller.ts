@@ -34,6 +34,38 @@ export class OAuthController {
     }
   }
 
+  // ============= YAHOO OAUTH =============
+
+  async getYahooAuthUrl(req: Request, res: Response) {
+    try {
+      const authUrl = oauthService.getYahooAuthUrl();
+      res.json({ authUrl });
+    } catch (error: any) {
+      res.status(500).json({ error: error.message });
+    }
+  }
+
+  async handleYahooCallback(req: Request, res: Response) {
+    try {
+      const { code } = req.query;
+
+      if (!code || typeof code !== 'string') {
+        return res.status(400).json({ error: 'Authorization code is required' });
+      }
+
+      const tokens = await oauthService.getYahooTokensFromCode(code);
+
+      // En producción, guardar los tokens en la base de datos asociados al usuario
+      res.json({
+        success: true,
+        message: 'Yahoo account connected successfully',
+        tokens,
+      });
+    } catch (error: any) {
+      res.status(500).json({ error: error.message });
+    }
+  }
+
   // ============= MICROSOFT OAUTH =============
 
   async getMicrosoftAuthUrl(req: Request, res: Response) {

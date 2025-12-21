@@ -7,6 +7,10 @@ const router = Router();
 router.get('/gmail/auth-url', oauthController.getGmailAuthUrl);
 router.get('/gmail/callback', oauthController.handleGmailCallback);
 
+// Yahoo OAuth
+router.get('/yahoo/auth-url', oauthController.getYahooAuthUrl);
+router.get('/yahoo/callback', oauthController.handleYahooCallback);
+
 // Microsoft OAuth
 router.get('/microsoft/auth-url', oauthController.getMicrosoftAuthUrl);
 router.get('/microsoft/callback', oauthController.handleMicrosoftCallback);

@@ -6,7 +6,7 @@ export interface User {
 
 export interface EmailAccount {
   id: string;
-  provider: 'gmail' | 'outlook' | 'custom';
+  provider: 'gmail' | 'outlook' | 'yahoo' | 'protonmail' | 'custom';
   email: string;
   imapHost?: string;
   imapPort?: number;
@@ -32,7 +32,7 @@ export interface Email {
 }
 
 export interface Theme {
-  name: 'gmail' | 'outlook';
+  name: 'gmail' | 'outlook' | 'yahoo';
   mode: 'light' | 'dark';
   colors: {
     primary: string;

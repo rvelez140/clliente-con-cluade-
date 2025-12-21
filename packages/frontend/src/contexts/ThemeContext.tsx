@@ -62,29 +62,62 @@ const outlookDarkTheme: Theme = {
   },
 };
 
+const yahooLightTheme: Theme = {
+  name: 'yahoo',
+  mode: 'light',
+  colors: {
+    primary: '#6001d2',
+    secondary: '#7b1fa2',
+    background: '#f6f6f6',
+    surface: '#ffffff',
+    text: '#000000',
+    textSecondary: '#545454',
+    border: '#d0d0d0',
+    hover: '#f0f0f0',
+  },
+};
+
+const yahooDarkTheme: Theme = {
+  name: 'yahoo',
+  mode: 'dark',
+  colors: {
+    primary: '#9d5cff',
+    secondary: '#ba68c8',
+    background: '#1c1c1c',
+    surface: '#2a2a2a',
+    text: '#ffffff',
+    textSecondary: '#b0b0b0',
+    border: '#404040',
+    hover: '#333333',
+  },
+};
+
 interface ThemeContextType {
   currentTheme: Theme;
-  setTheme: (theme: 'gmail' | 'outlook') => void;
+  setTheme: (theme: 'gmail' | 'outlook' | 'yahoo') => void;
   toggleDarkMode: () => void;
   isDarkMode: boolean;
 }
 
 const ThemeContext = createContext<ThemeContextType | undefined>(undefined);
 
-const getTheme = (name: 'gmail' | 'outlook', mode: 'light' | 'dark'): Theme => {
+const getTheme = (name: 'gmail' | 'outlook' | 'yahoo', mode: 'light' | 'dark'): Theme => {
   if (name === 'gmail') {
     return mode === 'dark' ? gmailDarkTheme : gmailLightTheme;
+  }
+  if (name === 'yahoo') {
+    return mode === 'dark' ? yahooDarkTheme : yahooLightTheme;
   }
   return mode === 'dark' ? outlookDarkTheme : outlookLightTheme;
 };
 
 export const ThemeProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
-  const [themeName, setThemeName] = useState<'gmail' | 'outlook'>('gmail');
+  const [themeName, setThemeName] = useState<'gmail' | 'outlook' | 'yahoo'>('gmail');
   const [isDarkMode, setIsDarkMode] = useState<boolean>(false);
 
   const currentTheme = useMemo(() => getTheme(themeName, isDarkMode ? 'dark' : 'light'), [themeName, isDarkMode]);
 
-  const setTheme = (name: 'gmail' | 'outlook') => {
+  const setTheme = (name: 'gmail' | 'outlook' | 'yahoo') => {
     setThemeName(name);
     localStorage.setItem('themeName', name);
   };
@@ -96,7 +129,7 @@ export const ThemeProvider: React.FC<{ children: React.ReactNode }> = ({ childre
   };
 
   React.useEffect(() => {
-    const savedThemeName = localStorage.getItem('themeName') as 'gmail' | 'outlook' | null;
+    const savedThemeName = localStorage.getItem('themeName') as 'gmail' | 'outlook' | 'yahoo' | null;
     const savedDarkMode = localStorage.getItem('darkMode');
 
     if (savedThemeName) {
@@ -131,6 +164,8 @@ export const ThemeProvider: React.FC<{ children: React.ReactNode }> = ({ childre
         typography: {
           fontFamily: currentTheme.name === 'gmail'
             ? '"Roboto", "Helvetica", "Arial", sans-serif'
+            : currentTheme.name === 'yahoo'
+            ? '"Helvetica Neue", "Helvetica", "Arial", sans-serif'
             : '"Segoe UI", "Roboto", "Helvetica", "Arial", sans-serif',
         },
       }),

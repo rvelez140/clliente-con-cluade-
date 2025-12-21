@@ -15,7 +15,7 @@ import EmailIcon from '@mui/icons-material/Email';
 const Login: React.FC = () => {
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
-  const { loginWithGoogle, loginWithMicrosoft } = useAuth();
+  const { loginWithGoogle, loginWithMicrosoft, loginWithYahoo } = useAuth();
   const navigate = useNavigate();
 
   const handleGoogleLogin = async () => {
@@ -42,6 +42,23 @@ const Login: React.FC = () => {
     } finally {
       setLoading(false);
     }
+  };
+
+  const handleYahooLogin = async () => {
+    setError('');
+    setLoading(true);
+    try {
+      await loginWithYahoo();
+      navigate('/');
+    } catch (err: any) {
+      setError(err.response?.data?.error || 'Error al autenticar con Yahoo');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleProtonMailLogin = () => {
+    navigate('/vps-login');
   };
 
   const handleVPSLogin = () => {
@@ -232,6 +249,110 @@ const Login: React.FC = () => {
                 </Box>
                 <Typography sx={{ fontSize: '16px', color: '#333' }}>
                   Continue with Microsoft
+                </Typography>
+              </Box>
+              <ChevronRightIcon sx={{ color: '#9e9e9e' }} />
+            </Button>
+
+            {/* Continue with Yahoo */}
+            <Button
+              onClick={handleYahooLogin}
+              disabled={loading}
+              sx={{
+                backgroundColor: 'white',
+                color: '#333',
+                border: '1.5px solid #e0e0e0',
+                borderRadius: 3,
+                padding: '16px 20px',
+                textTransform: 'none',
+                fontSize: '16px',
+                fontWeight: 500,
+                justifyContent: 'space-between',
+                transition: 'all 0.3s ease',
+                '&:hover': {
+                  backgroundColor: '#fafafa',
+                  borderColor: '#bdbdbd',
+                  transform: 'translateY(-2px)',
+                  boxShadow: '0 4px 12px rgba(0,0,0,0.1)',
+                },
+              }}
+            >
+              <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
+                <Box
+                  sx={{
+                    width: 40,
+                    height: 40,
+                    borderRadius: 2,
+                    backgroundColor: '#f5f5f5',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                  }}
+                >
+                  <Typography
+                    sx={{
+                      fontSize: '24px',
+                      fontWeight: 700,
+                      color: '#6001d2',
+                    }}
+                  >
+                    Y!
+                  </Typography>
+                </Box>
+                <Typography sx={{ fontSize: '16px', color: '#333' }}>
+                  Continue with Yahoo
+                </Typography>
+              </Box>
+              <ChevronRightIcon sx={{ color: '#9e9e9e' }} />
+            </Button>
+
+            {/* Continue with ProtonMail */}
+            <Button
+              onClick={handleProtonMailLogin}
+              disabled={loading}
+              sx={{
+                backgroundColor: 'white',
+                color: '#333',
+                border: '1.5px solid #e0e0e0',
+                borderRadius: 3,
+                padding: '16px 20px',
+                textTransform: 'none',
+                fontSize: '16px',
+                fontWeight: 500,
+                justifyContent: 'space-between',
+                transition: 'all 0.3s ease',
+                '&:hover': {
+                  backgroundColor: '#fafafa',
+                  borderColor: '#bdbdbd',
+                  transform: 'translateY(-2px)',
+                  boxShadow: '0 4px 12px rgba(0,0,0,0.1)',
+                },
+              }}
+            >
+              <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
+                <Box
+                  sx={{
+                    width: 40,
+                    height: 40,
+                    borderRadius: 2,
+                    backgroundColor: '#f5f5f5',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                  }}
+                >
+                  <Typography
+                    sx={{
+                      fontSize: '24px',
+                      fontWeight: 700,
+                      color: '#6d4aff',
+                    }}
+                  >
+                    P
+                  </Typography>
+                </Box>
+                <Typography sx={{ fontSize: '16px', color: '#333' }}>
+                  Continue with ProtonMail
                 </Typography>
               </Box>
               <ChevronRightIcon sx={{ color: '#9e9e9e' }} />
