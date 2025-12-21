@@ -45,7 +45,7 @@ const EmailComposer: React.FC<EmailComposerProps> = ({
     setLoading(true);
     try {
       await emailApi.sendEmail(accountId, {
-        to: to.split(',').map(e => e.trim()),
+        to: to.split(',').map((e: string) => e.trim()),
         subject,
         body,
       });
