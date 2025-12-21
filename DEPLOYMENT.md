@@ -59,11 +59,11 @@ apt install docker-compose-plugin -y
 # Permitir SSH
 ufw allow 22/tcp
 
-# Permitir HTTP
-ufw allow 80/tcp
+# Permitir el puerto del frontend
+ufw allow 8099/tcp
 
 # Permitir el puerto del backend (opcional, para acceso directo)
-ufw allow 3000/tcp
+ufw allow 8098/tcp
 
 # Habilitar el firewall
 ufw --force enable
@@ -127,8 +127,8 @@ docker-compose logs -f frontend
 
 3. **Acceder a la aplicación:**
 
-- Frontend: http://212.56.46.172
-- Backend API: http://212.56.46.172:3000
+- Frontend: http://212.56.46.172:8099
+- Backend API: http://212.56.46.172:8098
 
 ## Solución de Problemas
 

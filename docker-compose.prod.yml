@@ -51,7 +51,7 @@ services:
       JWT_SECRET: ${JWT_SECRET}
       GEMINI_API_KEY: ${GEMINI_API_KEY}
     ports:
-      - "3000:3000"
+      - "8098:3000"
     depends_on:
       postgres:
         condition: service_healthy
@@ -67,9 +67,9 @@ services:
     container_name: gemini-mail-frontend
     restart: unless-stopped
     environment:
-      VITE_API_URL: http://212.56.46.172:3000
+      VITE_API_URL: http://212.56.46.172:8098
     ports:
-      - "80:80"
+      - "8099:80"
     depends_on:
       - backend
     networks:
