@@ -298,10 +298,10 @@ export class EncryptionService {
 
     const revokedKey = await openpgp.revokeKey({
       key,
-      revocationCertificate: revocationSignature,
+      revocationCertificate: revocationSignature as any,
     });
 
-    return revokedKey.armor();
+    return (revokedKey as any).armor();
   }
 }
 

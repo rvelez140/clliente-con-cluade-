@@ -1,0 +1,26 @@
+# Este workflow ha sido DESACTIVADO
+# Los workflows correctos son:
+# - build-test.yml: Para compilar y probar backend/frontend
+# - deploy.yml: Para deployment a producción
+
+name: Construir (DESACTIVADO)
+
+# Este workflow no se ejecutará nunca
+on:
+  workflow_dispatch:
+    inputs:
+      manual_trigger:
+        description: 'Este workflow está desactivado'
+        required: false
+
+jobs:
+  disabled:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Workflow desactivado
+        run: |
+          echo "❌ Este workflow ha sido desactivado."
+          echo "✅ Usa los workflows correctos:"
+          echo "   - Build Test (build-test.yml)"
+          echo "   - Deploy to VPS (deploy.yml)"
+          exit 0

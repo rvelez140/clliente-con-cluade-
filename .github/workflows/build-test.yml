@@ -5,8 +5,6 @@ on:
     branches:
       - main
   push:
-    branches:
-      - '**'
     branches-ignore:
       - main
 
@@ -105,11 +103,20 @@ jobs:
           username: ${{ github.actor }}
           password: ${{ secrets.GITHUB_TOKEN }}
 
+      - name: Normalize repository name
+        id: repo
+        run: |
+          # Remove trailing hyphens and convert to lowercase for valid Docker image names
+          REPO_NAME=$(echo "${{ github.repository }}" | sed 's/-*$//' | tr '[:upper:]' '[:lower:]')
+          echo "Original: ${{ github.repository }}"
+          echo "Normalized: ${REPO_NAME}"
+          echo "name=${REPO_NAME}" >> $GITHUB_OUTPUT
+
       - name: Extract metadata for ${{ matrix.service }}
         id: meta
         uses: docker/metadata-action@v5
         with:
-          images: ${{ env.REGISTRY }}/${{ github.repository }}/${{ matrix.service }}
+          images: ${{ env.REGISTRY }}/${{ steps.repo.outputs.name }}/${{ matrix.service }}
           tags: |
             type=ref,event=pr
             type=sha,prefix=test-
