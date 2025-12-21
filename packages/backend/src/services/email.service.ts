@@ -1,5 +1,5 @@
 import Imap from 'imap';
-import { simpleParser } from 'mailparser';
+import { simpleParser, ParsedMail, AddressObject, Attachment } from 'mailparser';
 import nodemailer from 'nodemailer';
 import { EmailAccount, Email } from '../types';
 
@@ -25,7 +25,7 @@ export class EmailService {
 
           fetch.on('message', (msg) => {
             msg.on('body', (stream) => {
-              simpleParser(stream, async (err, parsed) => {
+              simpleParser(stream, async (err: Error | null, parsed: ParsedMail) => {
                 if (err) {
                   console.error('Error parsing email:', err);
                   return;
@@ -36,13 +36,13 @@ export class EmailService {
                   accountId: account.id,
                   messageId: parsed.messageId || '',
                   from: parsed.from?.text || '',
-                  to: parsed.to?.value.map(t => t.address || '') || [],
-                  cc: parsed.cc?.value.map(t => t.address || ''),
-                  bcc: parsed.bcc?.value.map(t => t.address || ''),
+                  to: parsed.to?.value.map((t: any) => t.address || '') || [],
+                  cc: parsed.cc?.value.map((t: any) => t.address || ''),
+                  bcc: parsed.bcc?.value.map((t: any) => t.address || ''),
                   subject: parsed.subject || '',
                   body: parsed.text || '',
                   htmlBody: parsed.html ? parsed.html.toString() : undefined,
-                  attachments: parsed.attachments?.map(a => ({
+                  attachments: parsed.attachments?.map((a: Attachment) => ({
                     id: a.contentId || '',
                     filename: a.filename || 'unknown',
                     mimeType: a.contentType,

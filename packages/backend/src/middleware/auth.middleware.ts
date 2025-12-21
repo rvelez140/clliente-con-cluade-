@@ -25,3 +25,6 @@ export const authenticateToken = async (
     return res.status(403).json({ error: 'Token inválido' });
   }
 };
+
+// Alias for backward compatibility
+export const authMiddleware = authenticateToken;

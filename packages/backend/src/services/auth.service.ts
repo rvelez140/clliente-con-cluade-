@@ -59,8 +59,8 @@ export class AuthService {
   private generateToken(user: User): string {
     return jwt.sign(
       { id: user.id, email: user.email },
-      config.jwtSecret,
-      { expiresIn: config.jwtExpiration }
+      config.jwtSecret as string,
+      { expiresIn: config.jwtExpiration as string }
     );
   }
 

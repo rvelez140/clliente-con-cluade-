@@ -94,7 +94,7 @@ export class OAuthService {
       body: params.toString(),
     });
 
-    const data = await response.json();
+    const data = await response.json() as any;
 
     return {
       accessToken: data.access_token,
@@ -123,7 +123,7 @@ export class OAuthService {
       body: params.toString(),
     });
 
-    const data = await response.json();
+    const data = await response.json() as any;
     return data.access_token;
   }
 
