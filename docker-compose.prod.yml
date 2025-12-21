@@ -78,7 +78,7 @@ services:
     container_name: gemini-mail-frontend
     restart: unless-stopped
     environment:
-      VITE_API_URL: ${VITE_API_URL:-https://tu-dominio.com}
+      VITE_API_URL: /api
     ports:
       - "127.0.0.1:8099:80"
     depends_on:
