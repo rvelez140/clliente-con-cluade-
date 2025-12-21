@@ -2,12 +2,35 @@ import { describe, it, expect, vi } from 'vitest';
 import { render, screen, fireEvent } from '@testing-library/react';
 import { BrowserRouter } from 'react-router-dom';
 import Sidebar from '../Sidebar';
+import { AuthProvider } from '../../contexts/AuthContext';
+import { ThemeProvider } from '../../contexts/ThemeContext';
+
+// Mock axios
+vi.mock('axios', () => ({
+  default: {
+    create: vi.fn(() => ({
+      interceptors: {
+        request: { use: vi.fn(), eject: vi.fn() },
+        response: { use: vi.fn(), eject: vi.fn() }
+      },
+      get: vi.fn(),
+      post: vi.fn(),
+      put: vi.fn(),
+      delete: vi.fn(),
+      patch: vi.fn()
+    }))
+  }
+}));
 
 const mockOnCompose = vi.fn();
 
 const MockedSidebar = () => (
   <BrowserRouter>
-    <Sidebar onCompose={mockOnCompose} />
+    <ThemeProvider>
+      <AuthProvider>
+        <Sidebar onCompose={mockOnCompose} />
+      </AuthProvider>
+    </ThemeProvider>
   </BrowserRouter>
 );
 

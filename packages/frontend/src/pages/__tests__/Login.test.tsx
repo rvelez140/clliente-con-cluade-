@@ -2,11 +2,17 @@ import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { render, screen, fireEvent, waitFor } from '@testing-library/react';
 import { BrowserRouter } from 'react-router-dom';
 import Login from '../Login';
-import axios from 'axios';
+import { AuthProvider } from '../../contexts/AuthContext';
+import * as authApi from '../../services/api';
 
-// Mock de axios
-vi.mock('axios');
-const mockedAxios = axios as any;
+// Mock del módulo de API
+vi.mock('../../services/api', () => ({
+  authApi: {
+    login: vi.fn(),
+    register: vi.fn(),
+    me: vi.fn()
+  }
+}));
 
 // Mock de react-router-dom
 const mockedNavigate = vi.fn();
@@ -20,7 +26,9 @@ vi.mock('react-router-dom', async () => {
 
 const MockedLogin = () => (
   <BrowserRouter>
-    <Login />
+    <AuthProvider>
+      <Login />
+    </AuthProvider>
   </BrowserRouter>
 );
 
@@ -77,7 +85,7 @@ describe('Login Page', () => {
       },
     };
 
-    mockedAxios.post.mockResolvedValueOnce(mockResponse);
+    vi.mocked(authApi.authApi.login).mockResolvedValueOnce(mockResponse);
 
     render(<MockedLogin />);
 
@@ -90,18 +98,15 @@ describe('Login Page', () => {
     fireEvent.click(submitButton);
 
     await waitFor(() => {
-      expect(mockedAxios.post).toHaveBeenCalledWith(
-        expect.stringContaining('/auth/login'),
-        expect.objectContaining({
-          email: 'test@example.com',
-          password: 'password123',
-        })
+      expect(authApi.authApi.login).toHaveBeenCalledWith(
+        'test@example.com',
+        'password123'
       );
     });
   });
 
   it('should show error message on failed login', async () => {
-    mockedAxios.post.mockRejectedValueOnce({
+    vi.mocked(authApi.authApi.login).mockRejectedValueOnce({
       response: { data: { error: 'Credenciales inválidas' } },
     });
 
@@ -116,7 +121,7 @@ describe('Login Page', () => {
     fireEvent.click(submitButton);
 
     await waitFor(() => {
-      expect(screen.getByText(/error/i)).toBeInTheDocument();
+      expect(screen.getByText(/credenciales inválidas/i)).toBeInTheDocument();
     });
   });
 
@@ -128,7 +133,7 @@ describe('Login Page', () => {
   });
 
   it('should disable submit button while loading', async () => {
-    mockedAxios.post.mockImplementation(
+    vi.mocked(authApi.authApi.login).mockImplementation(
       () => new Promise((resolve) => setTimeout(resolve, 1000))
     );
 
