@@ -1,0 +1,25 @@
+#!/bin/bash
+# Script para verificar si los secretos necesarios están configurados en GitHub
+# Nota: Este script solo te dirá QUÉ secretos necesitas, no puede leerlos por seguridad
+
+echo "🔐 Secretos necesarios para el despliegue:"
+echo ""
+echo "Ve a: https://github.com/rvelez140/clliente-con-cluade-/settings/secrets/actions"
+echo ""
+echo "Debes tener configurados estos secretos:"
+echo ""
+echo "1. VPS_HOST          - IP o dominio de tu VPS (ej: 192.168.1.100)"
+echo "2. VPS_USERNAME      - Usuario SSH del VPS (ej: root)"
+echo "3. VPS_SSH_KEY       - Clave privada SSH para conectar al VPS"
+echo "4. DB_PASSWORD       - Contraseña de PostgreSQL"
+echo "5. JWT_SECRET        - Secret para JWT (ej: una cadena aleatoria larga)"
+echo "6. GEMINI_API_KEY    - API key de Google Gemini"
+echo ""
+echo "❓ Cómo agregar un secreto:"
+echo "   1. Click en 'New repository secret'"
+echo "   2. Nombre: (ej: VPS_HOST)"
+echo "   3. Value: (tu valor)"
+echo "   4. Click 'Add secret'"
+echo ""
+echo "✅ GITHUB_TOKEN - Este secreto ya existe automáticamente"
+echo ""
