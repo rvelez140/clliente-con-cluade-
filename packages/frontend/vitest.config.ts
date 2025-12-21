@@ -11,7 +11,7 @@ export default defineConfig({
     css: true,
     coverage: {
       provider: 'v8',
-      reporter: ['text', 'json', 'html'],
+      reporter: ['text', 'json', 'html', 'lcov'],
       exclude: [
         'node_modules/',
         'src/test/',
@@ -20,6 +20,21 @@ export default defineConfig({
         '**/mockData',
         'dist/',
       ],
+
+      // Coverage thresholds - Bloquea CI si la cobertura es menor
+      thresholds: {
+        lines: 70,
+        functions: 70,
+        branches: 70,
+        statements: 70,
+        // Thresholds por archivo crítico
+        './src/services/api.ts': {
+          lines: 85,
+          functions: 85,
+          branches: 80,
+          statements: 85,
+        },
+      },
     },
   },
   resolve: {
