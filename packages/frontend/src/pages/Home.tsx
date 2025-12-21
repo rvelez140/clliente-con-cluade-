@@ -4,6 +4,8 @@ import Sidebar from '../components/Sidebar';
 import EmailList from '../components/EmailList';
 import EmailViewer from '../components/EmailViewer';
 import EmailComposer from '../components/EmailComposer';
+import ScheduledEmailComposer from '../components/ScheduledEmailComposer';
+import ScheduledEmailList from '../components/ScheduledEmailList';
 import { Email, EmailAccount } from '../types';
 import { emailApi } from '../services/api';
 
@@ -11,6 +13,8 @@ const Home: React.FC = () => {
   const [emails, setEmails] = useState<Email[]>([]);
   const [selectedEmail, setSelectedEmail] = useState<Email | null>(null);
   const [composerOpen, setComposerOpen] = useState(false);
+  const [scheduledComposerOpen, setScheduledComposerOpen] = useState(false);
+  const [showScheduledEmails, setShowScheduledEmails] = useState(false);
   const [loading, setLoading] = useState(true);
   const [accounts, setAccounts] = useState<EmailAccount[]>([]);
 
@@ -58,24 +62,39 @@ const Home: React.FC = () => {
 
   return (
     <Box sx={{ display: 'flex', height: '100vh' }}>
-      <Sidebar onCompose={() => setComposerOpen(true)} />
-      <EmailList
-        emails={emails}
-        selectedEmail={selectedEmail}
-        onSelectEmail={setSelectedEmail}
+      <Sidebar
+        onCompose={() => setComposerOpen(true)}
+        onScheduleEmail={() => setScheduledComposerOpen(true)}
+        onScheduledEmails={() => setShowScheduledEmails(!showScheduledEmails)}
       />
-      <EmailViewer
-        email={selectedEmail}
-        onBack={() => setSelectedEmail(null)}
-        onReply={() => {
-          setComposerOpen(true);
-        }}
-      />
+      {showScheduledEmails ? (
+        <ScheduledEmailList />
+      ) : (
+        <>
+          <EmailList
+            emails={emails}
+            selectedEmail={selectedEmail}
+            onSelectEmail={setSelectedEmail}
+          />
+          <EmailViewer
+            email={selectedEmail}
+            onBack={() => setSelectedEmail(null)}
+            onReply={() => {
+              setComposerOpen(true);
+            }}
+          />
+        </>
+      )}
       <EmailComposer
         open={composerOpen}
         onClose={() => setComposerOpen(false)}
         accountId={accounts[0]?.id}
         replyTo={selectedEmail}
+      />
+      <ScheduledEmailComposer
+        open={scheduledComposerOpen}
+        onClose={() => setScheduledComposerOpen(false)}
+        accountId={accounts[0]?.id}
       />
     </Box>
   );

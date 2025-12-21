@@ -56,4 +56,16 @@ export const geminiApi = {
     api.post('/gemini/suggest-reply', { emailBody, tone }),
 };
 
+export const scheduledEmailApi = {
+  create: (data: any) => api.post('/api/scheduled-emails', data),
+  getAll: () => api.get('/api/scheduled-emails'),
+  getById: (id: number) => api.get(`/api/scheduled-emails/${id}`),
+  update: (id: number, data: any) => api.put(`/api/scheduled-emails/${id}`, data),
+  delete: (id: number) => api.delete(`/api/scheduled-emails/${id}`),
+  generateWithAI: (data: { prompt: string; tone?: string; context?: string }) =>
+    api.post('/api/scheduled-emails/ai/generate', data),
+  summarize: (data: { emailBody: string }) =>
+    api.post('/api/scheduled-emails/ai/summarize', data),
+};
+
 export default api;
