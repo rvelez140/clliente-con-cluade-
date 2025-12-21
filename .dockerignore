@@ -1,0 +1,49 @@
+# Este .dockerignore es para el Dockerfile placeholder en la raíz
+# Los Dockerfiles reales están en packages/backend y packages/frontend
+# y tienen sus propios .dockerignore
+
+# Ignorar todo excepto lo mínimo
+*
+!README.md
+
+# Node modules
+node_modules/
+packages/*/node_modules/
+
+# Build outputs
+dist/
+build/
+packages/*/dist/
+packages/*/build/
+
+# Logs
+*.log
+npm-debug.log*
+
+# Environment files
+.env
+.env.*
+!.env.example
+
+# Git
+.git/
+.gitignore
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Data directories
+postgres-data/
+redis-data/
+uploads/
+
+# Test coverage
+coverage/
+.nyc_output/
