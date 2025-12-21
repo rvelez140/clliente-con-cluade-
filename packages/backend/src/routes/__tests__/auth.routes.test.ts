@@ -56,6 +56,19 @@ describe('Auth Routes', () => {
       expect(response.body.error).toContain('requeridos');
     });
 
+    it('should return 400 if password is missing', async () => {
+      const response = await request(app)
+        .post('/auth/register')
+        .send({
+          email: 'test@example.com',
+          name: 'Test User',
+        })
+        .expect(400);
+
+      expect(response.body).toHaveProperty('error');
+      expect(response.body.error).toContain('requeridos');
+    });
+
     it('should return 400 if name is missing', async () => {
       const response = await request(app)
         .post('/auth/register')

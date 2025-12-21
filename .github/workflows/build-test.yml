@@ -122,7 +122,7 @@ jobs:
       - name: Build ${{ matrix.service }} image (test only)
         uses: docker/build-push-action@v5
         with:
-          context: ./packages/${{ matrix.service }}
+          context: .
           file: ./packages/${{ matrix.service }}/Dockerfile
           push: false
           tags: ${{ steps.meta.outputs.tags }}
