@@ -3,43 +3,49 @@ import {
   Box,
   Card,
   CardContent,
-  TextField,
   Button,
   Typography,
-  Tab,
-  Tabs,
   Alert,
 } from '@mui/material';
 import { useAuth } from '../contexts/AuthContext';
 import { useNavigate } from 'react-router-dom';
+import ChevronRightIcon from '@mui/icons-material/ChevronRight';
+import EmailIcon from '@mui/icons-material/Email';
 
 const Login: React.FC = () => {
-  const [tab, setTab] = useState(0);
-  const [email, setEmail] = useState('');
-  const [password, setPassword] = useState('');
-  const [name, setName] = useState('');
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
-  const { login, register } = useAuth();
+  const { loginWithGoogle, loginWithMicrosoft } = useAuth();
   const navigate = useNavigate();
 
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
+  const handleGoogleLogin = async () => {
     setError('');
     setLoading(true);
-
     try {
-      if (tab === 0) {
-        await login(email, password);
-      } else {
-        await register(email, password, name);
-      }
+      await loginWithGoogle();
       navigate('/');
     } catch (err: any) {
-      setError(err.response?.data?.error || 'Error al autenticar');
+      setError(err.response?.data?.error || 'Error al autenticar con Google');
     } finally {
       setLoading(false);
     }
+  };
+
+  const handleMicrosoftLogin = async () => {
+    setError('');
+    setLoading(true);
+    try {
+      await loginWithMicrosoft();
+      navigate('/');
+    } catch (err: any) {
+      setError(err.response?.data?.error || 'Error al autenticar con Microsoft');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleVPSLogin = () => {
+    navigate('/vps-login');
   };
 
   return (
@@ -49,87 +55,232 @@ const Login: React.FC = () => {
         display: 'flex',
         alignItems: 'center',
         justifyContent: 'center',
-        backgroundColor: 'background.default',
+        backgroundColor: '#f5f5f5',
       }}
     >
-      <Card sx={{ width: 500, maxWidth: '90%' }}>
-        <CardContent>
-          <Box sx={{ textAlign: 'center', mb: 3 }}>
+      <Card
+        sx={{
+          width: 500,
+          maxWidth: '90%',
+          borderRadius: 4,
+          boxShadow: '0 4px 20px rgba(0,0,0,0.08)',
+        }}
+      >
+        <CardContent sx={{ p: 4 }}>
+          {/* Logo y Título */}
+          <Box sx={{ textAlign: 'center', mb: 4 }}>
             <Box
               sx={{
                 width: 80,
                 height: 80,
-                borderRadius: 2,
-                backgroundColor: 'primary.main',
+                borderRadius: 3,
+                background: 'linear-gradient(135deg, #1976d2 0%, #1565c0 100%)',
                 color: 'white',
                 display: 'flex',
                 alignItems: 'center',
                 justifyContent: 'center',
-                fontSize: 40,
-                fontWeight: 'bold',
-                margin: '0 auto 16px',
+                fontSize: 48,
+                fontWeight: 700,
+                margin: '0 auto 20px',
+                position: 'relative',
+                boxShadow: '0 4px 12px rgba(25, 118, 210, 0.3)',
               }}
             >
               G
+              <EmailIcon
+                sx={{
+                  position: 'absolute',
+                  bottom: -4,
+                  right: -4,
+                  fontSize: 24,
+                  backgroundColor: 'white',
+                  color: '#1976d2',
+                  borderRadius: '50%',
+                  padding: '4px',
+                }}
+              />
             </Box>
-            <Typography variant="h4" fontWeight="bold">
+            <Typography
+              variant="h4"
+              fontWeight="700"
+              sx={{
+                color: '#1a1a1a',
+                mb: 1,
+                letterSpacing: '-0.5px',
+              }}
+            >
               Gemini Mail
             </Typography>
-            <Typography variant="body2" color="text.secondary">
+            <Typography
+              variant="body1"
+              sx={{
+                color: '#666',
+                fontStyle: 'italic',
+              }}
+            >
               Personalize your experience
             </Typography>
           </Box>
 
-          <Tabs value={tab} onChange={(_, v) => setTab(v)} sx={{ mb: 3 }}>
-            <Tab label="Iniciar Sesión" />
-            <Tab label="Registrarse" />
-          </Tabs>
-
           {error && (
-            <Alert severity="error" sx={{ mb: 2 }}>
+            <Alert
+              severity="error"
+              sx={{
+                mb: 3,
+                borderRadius: 2,
+              }}
+            >
               {error}
             </Alert>
           )}
 
-          <form onSubmit={handleSubmit}>
-            {tab === 1 && (
-              <TextField
-                label="Nombre"
-                fullWidth
-                value={name}
-                onChange={(e) => setName(e.target.value)}
-                sx={{ mb: 2 }}
-                required
-              />
-            )}
-            <TextField
-              label="Email"
-              type="email"
-              fullWidth
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
-              sx={{ mb: 2 }}
-              required
-            />
-            <TextField
-              label="Contraseña"
-              type="password"
-              fullWidth
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
-              sx={{ mb: 3 }}
-              required
-            />
+          {/* Botones de Autenticación */}
+          <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
+            {/* Continue with Google */}
             <Button
-              type="submit"
-              variant="contained"
-              fullWidth
-              size="large"
+              onClick={handleGoogleLogin}
               disabled={loading}
+              sx={{
+                backgroundColor: 'white',
+                color: '#333',
+                border: '1.5px solid #e0e0e0',
+                borderRadius: 3,
+                padding: '16px 20px',
+                textTransform: 'none',
+                fontSize: '16px',
+                fontWeight: 500,
+                justifyContent: 'space-between',
+                transition: 'all 0.3s ease',
+                '&:hover': {
+                  backgroundColor: '#fafafa',
+                  borderColor: '#bdbdbd',
+                  transform: 'translateY(-2px)',
+                  boxShadow: '0 4px 12px rgba(0,0,0,0.1)',
+                },
+              }}
             >
-              {tab === 0 ? 'Iniciar Sesión' : 'Registrarse'}
+              <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
+                <Box
+                  sx={{
+                    width: 40,
+                    height: 40,
+                    borderRadius: 2,
+                    backgroundColor: '#f5f5f5',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                  }}
+                >
+                  <svg width="20" height="20" viewBox="0 0 24 24">
+                    <path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/>
+                    <path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/>
+                    <path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z"/>
+                    <path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"/>
+                  </svg>
+                </Box>
+                <Typography sx={{ fontSize: '16px', color: '#333' }}>
+                  Continue with Google
+                </Typography>
+              </Box>
+              <ChevronRightIcon sx={{ color: '#9e9e9e' }} />
             </Button>
-          </form>
+
+            {/* Continue with Microsoft */}
+            <Button
+              onClick={handleMicrosoftLogin}
+              disabled={loading}
+              sx={{
+                backgroundColor: 'white',
+                color: '#333',
+                border: '1.5px solid #e0e0e0',
+                borderRadius: 3,
+                padding: '16px 20px',
+                textTransform: 'none',
+                fontSize: '16px',
+                fontWeight: 500,
+                justifyContent: 'space-between',
+                transition: 'all 0.3s ease',
+                '&:hover': {
+                  backgroundColor: '#fafafa',
+                  borderColor: '#bdbdbd',
+                  transform: 'translateY(-2px)',
+                  boxShadow: '0 4px 12px rgba(0,0,0,0.1)',
+                },
+              }}
+            >
+              <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
+                <Box
+                  sx={{
+                    width: 40,
+                    height: 40,
+                    borderRadius: 2,
+                    backgroundColor: '#f5f5f5',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                  }}
+                >
+                  <Typography
+                    sx={{
+                      fontSize: '24px',
+                      fontWeight: 700,
+                      color: '#00a4ef',
+                    }}
+                  >
+                    M
+                  </Typography>
+                </Box>
+                <Typography sx={{ fontSize: '16px', color: '#333' }}>
+                  Continue with Microsoft
+                </Typography>
+              </Box>
+              <ChevronRightIcon sx={{ color: '#9e9e9e' }} />
+            </Button>
+
+            {/* Self-hosted / VPS */}
+            <Button
+              onClick={handleVPSLogin}
+              disabled={loading}
+              sx={{
+                backgroundColor: 'white',
+                color: '#333',
+                border: '1.5px solid #e0e0e0',
+                borderRadius: 3,
+                padding: '16px 20px',
+                textTransform: 'none',
+                fontSize: '16px',
+                fontWeight: 500,
+                justifyContent: 'space-between',
+                transition: 'all 0.3s ease',
+                '&:hover': {
+                  backgroundColor: '#fafafa',
+                  borderColor: '#bdbdbd',
+                  transform: 'translateY(-2px)',
+                  boxShadow: '0 4px 12px rgba(0,0,0,0.1)',
+                },
+              }}
+            >
+              <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
+                <Box
+                  sx={{
+                    width: 40,
+                    height: 40,
+                    borderRadius: 2,
+                    backgroundColor: '#f5f5f5',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                  }}
+                >
+                  <EmailIcon sx={{ color: '#666', fontSize: 24 }} />
+                </Box>
+                <Typography sx={{ fontSize: '16px', color: '#333' }}>
+                  Self-hosted / VPS
+                </Typography>
+              </Box>
+              <ChevronRightIcon sx={{ color: '#9e9e9e' }} />
+            </Button>
+          </Box>
         </CardContent>
       </Card>
     </Box>
