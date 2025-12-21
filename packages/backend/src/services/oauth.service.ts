@@ -50,6 +50,77 @@ export class OAuthService {
     return credentials.access_token!;
   }
 
+  // ============= YAHOO OAUTH2 =============
+
+  getYahooAuthUrl(): string {
+    const clientId = process.env.YAHOO_CLIENT_ID;
+    const redirectUri = process.env.YAHOO_REDIRECT_URI || 'http://localhost:3000/api/auth/yahoo/callback';
+
+    const authUrl = `https://api.login.yahoo.com/oauth2/request_auth?` +
+      `client_id=${clientId}` +
+      `&redirect_uri=${encodeURIComponent(redirectUri)}` +
+      `&response_type=code` +
+      `&scope=mail-r%20mail-w`;
+
+    return authUrl;
+  }
+
+  async getYahooTokensFromCode(code: string): Promise<{ accessToken: string; refreshToken: string }> {
+    const clientId = process.env.YAHOO_CLIENT_ID;
+    const clientSecret = process.env.YAHOO_CLIENT_SECRET;
+    const redirectUri = process.env.YAHOO_REDIRECT_URI || 'http://localhost:3000/api/auth/yahoo/callback';
+
+    const tokenUrl = 'https://api.login.yahoo.com/oauth2/get_token';
+
+    const params = new URLSearchParams({
+      client_id: clientId!,
+      client_secret: clientSecret!,
+      code: code,
+      redirect_uri: redirectUri,
+      grant_type: 'authorization_code',
+    });
+
+    const response = await fetch(tokenUrl, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/x-www-form-urlencoded',
+      },
+      body: params.toString(),
+    });
+
+    const data = await response.json() as any;
+
+    return {
+      accessToken: data.access_token,
+      refreshToken: data.refresh_token,
+    };
+  }
+
+  async refreshYahooAccessToken(refreshToken: string): Promise<string> {
+    const clientId = process.env.YAHOO_CLIENT_ID;
+    const clientSecret = process.env.YAHOO_CLIENT_SECRET;
+
+    const tokenUrl = 'https://api.login.yahoo.com/oauth2/get_token';
+
+    const params = new URLSearchParams({
+      client_id: clientId!,
+      client_secret: clientSecret!,
+      refresh_token: refreshToken,
+      grant_type: 'refresh_token',
+    });
+
+    const response = await fetch(tokenUrl, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/x-www-form-urlencoded',
+      },
+      body: params.toString(),
+    });
+
+    const data = await response.json() as any;
+    return data.access_token;
+  }
+
   // ============= MICROSOFT/OUTLOOK OAUTH2 =============
 
   getMicrosoftAuthUrl(): string {
@@ -141,6 +212,8 @@ export class OAuthService {
         return await this.refreshGmailAccessToken(account.refreshToken);
       } else if (account.provider === 'outlook') {
         return await this.refreshMicrosoftAccessToken(account.refreshToken);
+      } else if (account.provider === 'yahoo') {
+        return await this.refreshYahooAccessToken(account.refreshToken);
       }
       return account.accessToken;
     } catch (error) {

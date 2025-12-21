@@ -9,6 +9,7 @@ interface AuthContextType {
   register: (email: string, password: string, name: string) => Promise<void>;
   loginWithGoogle: () => Promise<void>;
   loginWithMicrosoft: () => Promise<void>;
+  loginWithYahoo: () => Promise<void>;
   logout: () => void;
 }
 
@@ -62,13 +63,19 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     window.location.href = `${backendUrl}/auth/microsoft`;
   };
 
+  const loginWithYahoo = async () => {
+    // Redirigir al endpoint de autenticación de Yahoo
+    const backendUrl = import.meta.env.VITE_API_URL || 'http://localhost:3000';
+    window.location.href = `${backendUrl}/auth/yahoo`;
+  };
+
   const logout = () => {
     localStorage.removeItem('token');
     setUser(null);
   };
 
   return (
-    <AuthContext.Provider value={{ user, loading, login, register, loginWithGoogle, loginWithMicrosoft, logout }}>
+    <AuthContext.Provider value={{ user, loading, login, register, loginWithGoogle, loginWithMicrosoft, loginWithYahoo, logout }}>
       {children}
     </AuthContext.Provider>
   );
