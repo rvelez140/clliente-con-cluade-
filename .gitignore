@@ -28,3 +28,10 @@ release/
 
 # Archivos de secretos (no subir al repositorio)
 SECRETS.md
+
+# VPS deployment files
+backups/
+logs/
+*.sql
+*.sql.gz
+.env.production

@@ -47,3 +47,15 @@ uploads/
 # Test coverage
 coverage/
 .nyc_output/
+
+# VPS deployment files
+backups/
+logs/
+*.sql
+*.sql.gz
+.env.production
+deploy-vps.sh
+backup-db.sh
+restore-db.sh
+DEPLOY.md
+nginx.conf.example
