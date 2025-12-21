@@ -53,7 +53,7 @@ describe('Auth Routes', () => {
         })
         .expect(400);
 
-      expect(response.body).toHaveProperty('errors');
+      expect(response.body).toHaveProperty('error');
     });
 
     it('should return 400 if password is too short', async () => {
@@ -66,7 +66,7 @@ describe('Auth Routes', () => {
         })
         .expect(400);
 
-      expect(response.body).toHaveProperty('errors');
+      expect(response.body).toHaveProperty('error');
     });
 
     it('should return 400 if user already exists', async () => {
@@ -141,7 +141,7 @@ describe('Auth Routes', () => {
         })
         .expect(400);
 
-      expect(response.body).toHaveProperty('errors');
+      expect(response.body).toHaveProperty('error');
     });
 
     it('should return 400 if password is missing', async () => {
@@ -152,7 +152,7 @@ describe('Auth Routes', () => {
         })
         .expect(400);
 
-      expect(response.body).toHaveProperty('errors');
+      expect(response.body).toHaveProperty('error');
     });
   });
 

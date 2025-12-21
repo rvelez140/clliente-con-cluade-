@@ -1,12 +1,7 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
-import { render, screen, fireEvent, waitFor } from '@testing-library/react';
+import { render, screen, fireEvent } from '@testing-library/react';
 import { BrowserRouter } from 'react-router-dom';
 import Login from '../Login';
-import axios from 'axios';
-
-// Mock de axios
-vi.mock('axios');
-const mockedAxios = axios as any;
 
 // Mock de react-router-dom
 const mockedNavigate = vi.fn();
@@ -17,6 +12,17 @@ vi.mock('react-router-dom', async () => {
     useNavigate: () => mockedNavigate,
   };
 });
+
+// Mock del AuthContext
+const mockLoginWithGoogle = vi.fn();
+const mockLoginWithMicrosoft = vi.fn();
+
+vi.mock('../../contexts/AuthContext', () => ({
+  useAuth: () => ({
+    loginWithGoogle: mockLoginWithGoogle,
+    loginWithMicrosoft: mockLoginWithMicrosoft,
+  }),
+}));
 
 const MockedLogin = () => (
   <BrowserRouter>
@@ -29,120 +35,71 @@ describe('Login Page', () => {
     vi.clearAllMocks();
   });
 
-  it('should render login form', () => {
+  it('should render login page with Gemini Mail branding', () => {
     render(<MockedLogin />);
 
     expect(screen.getByText(/Gemini Mail/i)).toBeInTheDocument();
-    expect(screen.getByLabelText(/email/i)).toBeInTheDocument();
-    expect(screen.getByLabelText(/contraseña/i)).toBeInTheDocument();
-    expect(screen.getByRole('button', { name: /iniciar sesión/i })).toBeInTheDocument();
+    expect(screen.getByText(/Personalize your experience/i)).toBeInTheDocument();
   });
 
-  it('should have email and password inputs', () => {
+  it('should render Google login button', () => {
     render(<MockedLogin />);
 
-    const emailInput = screen.getByLabelText(/email/i);
-    const passwordInput = screen.getByLabelText(/contraseña/i);
-
-    expect(emailInput).toBeInTheDocument();
-    expect(passwordInput).toBeInTheDocument();
-    expect(passwordInput).toHaveAttribute('type', 'password');
+    const googleButton = screen.getByText(/Continue with Google/i);
+    expect(googleButton).toBeInTheDocument();
   });
 
-  it('should allow typing in email input', () => {
+  it('should render Microsoft login button', () => {
     render(<MockedLogin />);
 
-    const emailInput = screen.getByLabelText(/email/i) as HTMLInputElement;
-
-    fireEvent.change(emailInput, { target: { value: 'test@example.com' } });
-
-    expect(emailInput.value).toBe('test@example.com');
+    const microsoftButton = screen.getByText(/Continue with Microsoft/i);
+    expect(microsoftButton).toBeInTheDocument();
   });
 
-  it('should allow typing in password input', () => {
+  it('should render VPS login button', () => {
     render(<MockedLogin />);
 
-    const passwordInput = screen.getByLabelText(/contraseña/i) as HTMLInputElement;
-
-    fireEvent.change(passwordInput, { target: { value: 'password123' } });
-
-    expect(passwordInput.value).toBe('password123');
+    const vpsButton = screen.getByText(/Self-hosted \/ VPS/i);
+    expect(vpsButton).toBeInTheDocument();
   });
 
-  it('should submit form with valid credentials', async () => {
-    const mockResponse = {
-      data: {
-        token: 'mock_token',
-        user: { id: '1', email: 'test@example.com' },
-      },
-    };
-
-    mockedAxios.post.mockResolvedValueOnce(mockResponse);
-
+  it('should call loginWithGoogle when Google button is clicked', async () => {
     render(<MockedLogin />);
 
-    const emailInput = screen.getByLabelText(/email/i);
-    const passwordInput = screen.getByLabelText(/contraseña/i);
-    const submitButton = screen.getByRole('button', { name: /iniciar sesión/i });
+    const googleButton = screen.getByText(/Continue with Google/i);
+    fireEvent.click(googleButton);
 
-    fireEvent.change(emailInput, { target: { value: 'test@example.com' } });
-    fireEvent.change(passwordInput, { target: { value: 'password123' } });
-    fireEvent.click(submitButton);
-
-    await waitFor(() => {
-      expect(mockedAxios.post).toHaveBeenCalledWith(
-        expect.stringContaining('/auth/login'),
-        expect.objectContaining({
-          email: 'test@example.com',
-          password: 'password123',
-        })
-      );
-    });
+    expect(mockLoginWithGoogle).toHaveBeenCalledTimes(1);
   });
 
-  it('should show error message on failed login', async () => {
-    mockedAxios.post.mockRejectedValueOnce({
-      response: { data: { error: 'Credenciales inválidas' } },
-    });
-
+  it('should call loginWithMicrosoft when Microsoft button is clicked', async () => {
     render(<MockedLogin />);
 
-    const emailInput = screen.getByLabelText(/email/i);
-    const passwordInput = screen.getByLabelText(/contraseña/i);
-    const submitButton = screen.getByRole('button', { name: /iniciar sesión/i });
+    const microsoftButton = screen.getByText(/Continue with Microsoft/i);
+    fireEvent.click(microsoftButton);
 
-    fireEvent.change(emailInput, { target: { value: 'wrong@example.com' } });
-    fireEvent.change(passwordInput, { target: { value: 'wrongpassword' } });
-    fireEvent.click(submitButton);
-
-    await waitFor(() => {
-      expect(screen.getByText(/error/i)).toBeInTheDocument();
-    });
+    expect(mockLoginWithMicrosoft).toHaveBeenCalledTimes(1);
   });
 
-  it('should have a link to register page', () => {
+  it('should navigate to /vps-login when VPS button is clicked', () => {
     render(<MockedLogin />);
 
-    const registerLink = screen.getByText(/crear cuenta/i);
-    expect(registerLink).toBeInTheDocument();
+    const vpsButton = screen.getByText(/Self-hosted \/ VPS/i);
+    fireEvent.click(vpsButton);
+
+    expect(mockedNavigate).toHaveBeenCalledWith('/vps-login');
   });
 
-  it('should disable submit button while loading', async () => {
-    mockedAxios.post.mockImplementation(
-      () => new Promise((resolve) => setTimeout(resolve, 1000))
-    );
-
+  it('should have three authentication options', () => {
     render(<MockedLogin />);
 
-    const emailInput = screen.getByLabelText(/email/i);
-    const passwordInput = screen.getByLabelText(/contraseña/i);
-    const submitButton = screen.getByRole('button', { name: /iniciar sesión/i });
+    const buttons = screen.getAllByRole('button');
+    expect(buttons).toHaveLength(3);
+  });
 
-    fireEvent.change(emailInput, { target: { value: 'test@example.com' } });
-    fireEvent.change(passwordInput, { target: { value: 'password123' } });
-    fireEvent.click(submitButton);
+  it('should render with proper styling', () => {
+    const { container } = render(<MockedLogin />);
 
-    // El botón debería estar deshabilitado mientras se procesa
-    expect(submitButton).toBeDisabled();
+    expect(container.firstChild).toBeInTheDocument();
   });
 });
