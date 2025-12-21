@@ -19,8 +19,9 @@ import {
   Send,
   Drafts,
   Delete,
-  Settings,
   AccountCircle,
+  Brightness4,
+  Brightness7,
 } from '@mui/icons-material';
 import { useAuth } from '../contexts/AuthContext';
 import { useTheme } from '../contexts/ThemeContext';
@@ -31,7 +32,7 @@ interface SidebarProps {
 
 const Sidebar: React.FC<SidebarProps> = ({ onCompose }) => {
   const { logout, user } = useAuth();
-  const { currentTheme, setTheme } = useTheme();
+  const { currentTheme, setTheme, toggleDarkMode, isDarkMode } = useTheme();
   const [anchorEl, setAnchorEl] = React.useState<null | HTMLElement>(null);
 
   const handleMenu = (event: React.MouseEvent<HTMLElement>) => {
@@ -92,6 +93,13 @@ const Sidebar: React.FC<SidebarProps> = ({ onCompose }) => {
           <Menu anchorEl={anchorEl} open={Boolean(anchorEl)} onClose={handleClose}>
             <MenuItem disabled>
               <Box sx={{ fontSize: 12, color: 'text.secondary' }}>{user?.email}</Box>
+            </MenuItem>
+            <Divider />
+            <MenuItem onClick={() => { toggleDarkMode(); handleClose(); }}>
+              <ListItemIcon>
+                {isDarkMode ? <Brightness7 fontSize="small" /> : <Brightness4 fontSize="small" />}
+              </ListItemIcon>
+              <ListItemText>{isDarkMode ? 'Modo Claro' : 'Modo Oscuro'}</ListItemText>
             </MenuItem>
             <Divider />
             <MenuItem onClick={() => { setTheme('gmail'); handleClose(); }}>

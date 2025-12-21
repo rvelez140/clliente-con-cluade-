@@ -33,6 +33,7 @@ export interface Email {
 
 export interface Theme {
   name: 'gmail' | 'outlook';
+  mode: 'light' | 'dark';
   colors: {
     primary: string;
     secondary: string;
