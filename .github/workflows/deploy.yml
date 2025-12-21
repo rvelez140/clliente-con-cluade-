@@ -9,7 +9,6 @@ on:
 
 env:
   REGISTRY: ghcr.io
-  IMAGE_NAME: ${{ github.repository }}
 
 jobs:
   build-and-push:
@@ -17,10 +16,20 @@ jobs:
     permissions:
       contents: read
       packages: write
+    outputs:
+      image_name: ${{ steps.image-name.outputs.name }}
 
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
+
+      - name: Set image name
+        id: image-name
+        run: |
+          # Normalizar el nombre del repositorio eliminando guiones al final
+          REPO_NAME="${{ github.repository }}"
+          NORMALIZED_NAME="${REPO_NAME%-}"
+          echo "name=${NORMALIZED_NAME}" >> $GITHUB_OUTPUT
 
       - name: Log in to GitHub Container Registry
         uses: docker/login-action@v3
@@ -33,7 +42,7 @@ jobs:
         id: meta-backend
         uses: docker/metadata-action@v5
         with:
-          images: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}/backend
+          images: ${{ env.REGISTRY }}/${{ steps.image-name.outputs.name }}/backend
           tags: |
             type=ref,event=branch
             type=sha,prefix={{branch}}-
@@ -52,7 +61,7 @@ jobs:
         id: meta-frontend
         uses: docker/metadata-action@v5
         with:
-          images: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}/frontend
+          images: ${{ env.REGISTRY }}/${{ steps.image-name.outputs.name }}/frontend
           tags: |
             type=ref,event=branch
             type=sha,prefix={{branch}}-
@@ -79,7 +88,7 @@ jobs:
         uses: appleboy/ssh-action@v1.0.3
         env:
           REGISTRY: ${{ env.REGISTRY }}
-          IMAGE_NAME: ${{ env.IMAGE_NAME }}
+          IMAGE_NAME: ${{ needs.build-and-push.outputs.image_name }}
           BRANCH: ${{ github.ref_name }}
           DB_PASSWORD: ${{ secrets.DB_PASSWORD }}
           JWT_SECRET: ${{ secrets.JWT_SECRET }}
