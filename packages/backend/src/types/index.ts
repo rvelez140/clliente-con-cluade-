@@ -19,6 +19,9 @@ export interface EmailAccount {
   accessToken?: string;
   refreshToken?: string;
   password?: string;
+  useApi?: boolean; // Si true, usar API en lugar de IMAP/SMTP
+  publicKey?: string; // Clave pública PGP del usuario
+  privateKey?: string; // Clave privada PGP (encriptada)
   createdAt: Date;
   updatedAt: Date;
 }
@@ -40,6 +43,14 @@ export interface Email {
   folder: string;
   receivedAt: Date;
   createdAt: Date;
+  // Campos de IA
+  category?: string;
+  priority?: string;
+  isSpam?: boolean;
+  isPhishing?: boolean;
+  tags?: string[];
+  isEncrypted?: boolean;
+  aiMetadata?: any;
 }
 
 export interface Attachment {
@@ -72,4 +83,41 @@ export interface GeminiRequest {
 export interface GeminiResponse {
   text: string;
   suggestions?: string[];
+}
+
+export interface AIClassification {
+  category: 'personal' | 'work' | 'finance' | 'social' | 'promotions' | 'spam' | 'important' | 'updates';
+  confidence: number;
+  suggestedFolder?: string;
+  tags?: string[];
+}
+
+export interface SpamAnalysis {
+  isSpam: boolean;
+  isPhishing: boolean;
+  confidence: number;
+  reasons: string[];
+  riskLevel: 'low' | 'medium' | 'high' | 'critical';
+}
+
+export interface SearchQuery {
+  query: string;
+  filters?: {
+    from?: string;
+    to?: string;
+    subject?: string;
+    dateRange?: {
+      start?: Date;
+      end?: Date;
+    };
+    hasAttachment?: boolean;
+    isRead?: boolean;
+    category?: string;
+  };
+}
+
+export interface EncryptionKeyPair {
+  publicKey: string;
+  privateKey: string;
+  revocationCertificate: string;
 }

@@ -1,124 +1,161 @@
 # Gemini Mail
 
-Cliente de correo electrónico multiplataforma con integración de IA, temas personalizables y soporte para múltiples proveedores.
+Cliente de correo electrónico multiplataforma de próxima generación con IA avanzada, encriptación end-to-end, y soporte universal para proveedores de correo.
 
-## Características
+---
 
-### Plataformas Soportadas
-- **Web**: Aplicación web moderna construida con React
-- **Desktop**: Aplicaciones nativas para Windows 11/10/Server y Linux
-- **Mobile**: Aplicaciones para Android e iOS
+## 🚀 Características Principales
 
-### Funcionalidades Principales
+### 📧 Protocolos de Correo Estándar
+- **IMAP/SMTP Completo**: Compatible con cualquier servidor autoalojado
+  - Postfix, Dovecot, Mail-in-a-Box, iRedMail
+  - Zimbra, Kerio, Exchange (IMAP habilitado)
+  - Cualquier servidor estándar IMAP/SMTP
+- **Autenticación Flexible**:
+  - ✅ OAuth2 para Gmail y Microsoft/Outlook
+  - ✅ Credenciales tradicionales (usuario/contraseña)
+  - ✅ Contraseñas de aplicación
+  - ✅ Soporte para 2FA
 
-#### Gestión de Correo
-- Soporte para Gmail, Outlook y servidores auto-alojados (IMAP/SMTP)
-- Enviar, recibir y organizar correos
-- Carpetas personalizadas (Inbox, Enviados, Borradores, Basura)
-- Marcar correos como leídos/no leídos
-- Favoritos con estrellas
-- Adjuntar archivos
+### 🔌 Integraciones API Opcionales
+- **Gmail API**: Funcionalidades avanzadas de Google Workspace
+  - Búsqueda con operadores de Gmail
+  - Etiquetas y filtros nativos
+  - Integración con Google Drive
+- **Microsoft Graph API**: Integración empresarial con Office 365
+  - Correo, calendario y contactos
+  - Políticas de seguridad corporativas
+  - Teams y SharePoint
 
-#### Integración con Gemini AI
-- **Generar correos**: Crea correos desde un simple prompt
-- **Mejorar borradores**: Perfecciona la redacción y gramática
-- **Sugerir respuestas**: Obtén respuestas inteligentes automáticas
-- **Resumir correos**: Resúmenes concisos de correos largos
-- **Tonos ajustables**: Formal, casual, amigable, profesional
-- **Longitud variable**: Corto, medio, largo
+### 🤖 IA Avanzada con Gemini
 
-#### Temas Personalizables
-- **Tema Gmail**: Inspirado en el diseño de Gmail
-- **Tema Outlook**: Inspirado en el diseño de Outlook
-- Cambio de tema en tiempo real
-- Diseño responsive
+#### Generación de Contenido
+- 📝 Crear correos desde prompts simples
+- ✨ Mejorar borradores existentes
+- 💬 Sugerir respuestas contextuales
+- 📄 Resumir correos largos y threads
 
-## Arquitectura
+#### Clasificación Inteligente
+- 🏷️ Categorización automática (personal, trabajo, finanzas, social, etc.)
+- ⚡ Detección de prioridad (urgente, alto, medio, bajo)
+- 🎯 Etiquetado semántico
+- 📁 Organización por carpetas sugeridas
+
+#### Búsqueda Inteligente
+- 🔍 Búsqueda en lenguaje natural
+- 🌐 Expansión semántica de consultas
+- 🎯 Filtros inteligentes contextuales
+- 🔗 Búsqueda por similitud
+
+#### Seguridad con IA
+- 🛡️ Detección de spam avanzada
+- 🎣 Identificación de phishing
+- ⚠️ Análisis de riesgo en tiempo real
+- 🚨 Alertas de seguridad
+
+#### Asistencia Inteligente
+- ✅ Extracción automática de tareas
+- ⚡ Respuestas rápidas sugeridas
+- 📅 Detección de fechas y eventos
+- 🎨 Tonos ajustables (formal, casual, amigable, profesional)
+
+### 🔐 Encriptación End-to-End
+
+#### OpenPGP/GPG Completo
+- 🔑 Generación de pares de claves (RSA 4096 bits)
+- 🔒 Encriptación de emails completos
+- ✍️ Firma digital de mensajes
+- ✅ Verificación de firmas
+- 🔄 Gestión completa de claves
+
+#### Seguridad
+- 🛡️ Claves privadas nunca salen del cliente
+- 🔐 Certificados de revocación
+- 🔄 Cambio seguro de contraseñas
+- 📤 Import/export de claves públicas
+
+### 📱 Multi-Plataforma
+
+- 🌐 **Web**: Aplicación moderna con React
+- 💻 **Desktop**: Windows, Linux (Electron)
+- 📱 **Mobile**: Android e iOS (React Native)
+
+### 👥 Gestión Multi-Cuenta
+
+- ⚡ Sincronización paralela de múltiples cuentas
+- 📬 Vista unificada de todas las bandejas
+- 🔍 Búsqueda global en todas las cuentas
+- 🔄 Switching rápido entre cuentas
+- 🎨 Configuración independiente por cuenta
+
+### 🎨 Personalización
+
+- **Tema Gmail**: Diseño inspirado en Gmail
+- **Tema Outlook**: Diseño inspirado en Outlook
+- 🌓 Cambio de tema en tiempo real
+- 📱 Diseño responsive
+
+---
+
+## 🏗️ Arquitectura
+
+Ver [ARCHITECTURE.md](ARCHITECTURE.md) para documentación completa de la arquitectura.
 
 ### Stack Tecnológico
 
 #### Backend
 - Node.js + Express + TypeScript
-- PostgreSQL (base de datos)
-- Redis (caché)
-- IMAP/SMTP (protocolos de correo)
-- Gemini AI API
-- JWT (autenticación)
+- PostgreSQL + Redis
+- IMAP/SMTP (imap, nodemailer)
+- Gmail API (googleapis)
+- Microsoft Graph API
+- Gemini AI
+- OpenPGP (openpgp)
 
-#### Frontend Web
-- React 18
-- TypeScript
-- Material-UI (componentes)
-- Vite (build tool)
-- Axios (HTTP client)
+#### Frontend
+- React 18 + TypeScript
+- Material-UI + Vite
 - Zustand (state management)
 
 #### Desktop
-- Electron
-- Electron Builder (empaquetado)
-- Soporte para Windows y Linux
+- Electron + Electron Builder
 
 #### Mobile
-- React Native
-- React Navigation
-- React Native Paper
-- TypeScript
+- React Native + React Navigation
 
-#### DevOps
-- Docker + Docker Compose
-- PostgreSQL containerizado
-- Redis containerizado
+---
 
-## Instalación y Uso
+## 📦 Instalación
 
 ### Requisitos Previos
 - Node.js 20+
-- Docker y Docker Compose (para desarrollo)
+- Docker y Docker Compose (recomendado)
 - PostgreSQL 16+ (si no usas Docker)
 - Redis 7+ (si no usas Docker)
 
-### Configuración Inicial
+### Configuración Rápida con Docker
 
-1. Clonar el repositorio:
 ```bash
+# 1. Clonar repositorio
 git clone https://github.com/tu-usuario/gemini-mail.git
 cd gemini-mail
-```
 
-2. Copiar y configurar variables de entorno:
-```bash
+# 2. Configurar variables de entorno
 cp .env.example .env
-```
+# Editar .env con tus valores
 
-Edita `.env` y configura:
-- `DB_PASSWORD`: Contraseña de PostgreSQL
-- `JWT_SECRET`: Clave secreta para JWT
-- `GEMINI_API_KEY`: Tu API key de Gemini AI
-
-3. Instalar dependencias:
-```bash
-npm install
-```
-
-### Desarrollo con Docker
-
-1. Iniciar todos los servicios:
-```bash
+# 3. Iniciar servicios
 docker-compose up -d
-```
 
-2. Inicializar la base de datos:
-```bash
+# 4. Inicializar base de datos
 docker exec -i gemini-mail-db psql -U gemini_user -d gemini_mail < packages/backend/src/scripts/init-db.sql
+
+# 5. Acceder a la aplicación
+# Web: http://localhost
+# API: http://localhost:3000
 ```
 
-3. La aplicación estará disponible en:
-- Frontend: http://localhost
-- Backend API: http://localhost:3000
-- PostgreSQL: localhost:5432
-- Redis: localhost:6379
-
-### Desarrollo Local (sin Docker)
+### Configuración Manual
 
 #### Backend
 ```bash
@@ -134,176 +171,258 @@ npm install
 npm run dev
 ```
 
-### Aplicación Desktop
-
-#### Desarrollo
+#### Desktop
 ```bash
 cd packages/desktop
 npm install
 npm run dev
+
+# Build para producción
+npm run build:win    # Windows
+npm run build:linux  # Linux
 ```
 
-#### Construcción
-
-**Windows:**
-```bash
-npm run build:win
-```
-Genera instalador en `packages/desktop/release/`
-
-**Linux:**
-```bash
-npm run build:linux
-```
-Genera AppImage, .deb y .rpm en `packages/desktop/release/`
-
-### Aplicación Móvil
-
-#### Desarrollo
-
-**Android:**
+#### Mobile
 ```bash
 cd packages/mobile
 npm install
+
+# Android
 npm run android
-```
 
-**iOS:**
-```bash
-cd packages/mobile
-npm install
+# iOS
 cd ios && pod install && cd ..
 npm run ios
 ```
 
-#### Construcción
+---
 
-**Android:**
+## ⚙️ Configuración
+
+### Variables de Entorno Esenciales
+
 ```bash
-npm run build:android
+# Base de datos
+DB_HOST=localhost
+DB_PORT=5432
+DB_NAME=gemini_mail
+DB_USER=gemini_user
+DB_PASSWORD=tu_password_seguro
+
+# Redis
+REDIS_HOST=localhost
+REDIS_PORT=6379
+
+# Seguridad
+JWT_SECRET=tu_clave_secreta_jwt
+
+# IA
+GEMINI_API_KEY=tu_api_key_de_gemini
 ```
 
-**iOS:**
-Abrir en Xcode y seguir el proceso de distribución.
+### Configuración OAuth2 (Opcional)
 
-## Uso de la Aplicación
+Para habilitar las integraciones API:
 
-### Primera Configuración
-
-1. Crear una cuenta o iniciar sesión
-2. Agregar una cuenta de correo:
-   - **Gmail**: Email y contraseña de aplicación
-   - **Outlook**: Email y contraseña
-   - **Custom**: Configurar servidores IMAP/SMTP
-
-### Funciones de Gemini AI
-
-#### Generar un correo
-1. Click en "New message"
-2. Escribe el asunto
-3. Click en "AI Assistant" → "Generate from subject"
-4. Gemini generará el contenido basado en el asunto
-
-#### Mejorar un borrador
-1. Escribe tu borrador
-2. Click en "AI Assistant" → "Improve draft"
-3. Gemini mejorará la redacción
-
-#### Sugerir respuesta
-1. Abre un correo recibido
-2. Click en "Reply"
-3. Click en "Suggest Reply"
-4. Gemini generará una respuesta apropiada
-
-### Cambiar Tema
-
-1. Click en el icono de usuario
-2. Selecciona "Tema Gmail" o "Tema Outlook"
-3. El tema se aplicará inmediatamente
-
-## Estructura del Proyecto
-
-```
-gemini-mail/
-├── packages/
-│   ├── backend/          # API Node.js + Express
-│   │   ├── src/
-│   │   │   ├── config/   # Configuración
-│   │   │   ├── controllers/
-│   │   │   ├── services/ # Lógica de negocio
-│   │   │   ├── routes/   # Rutas API
-│   │   │   ├── middleware/
-│   │   │   └── types/
-│   │   └── Dockerfile
-│   ├── frontend/         # React Web App
-│   │   ├── src/
-│   │   │   ├── components/
-│   │   │   ├── pages/
-│   │   │   ├── contexts/
-│   │   │   ├── services/
-│   │   │   └── types/
-│   │   └── Dockerfile
-│   ├── desktop/          # Electron App
-│   │   └── src/
-│   └── mobile/           # React Native App
-│       └── src/
-├── docker-compose.yml
-├── .env.example
-└── README.md
+#### Gmail API
+1. Ir a [Google Cloud Console](https://console.cloud.google.com/)
+2. Crear proyecto y habilitar Gmail API
+3. Crear credenciales OAuth2
+4. Configurar:
+```bash
+GMAIL_CLIENT_ID=tu_client_id
+GMAIL_CLIENT_SECRET=tu_client_secret
+GMAIL_REDIRECT_URI=http://localhost:3000/api/oauth/gmail/callback
 ```
 
-## API Endpoints
+#### Microsoft Graph API
+1. Ir a [Azure Portal](https://portal.azure.com/)
+2. Registrar aplicación
+3. Configurar permisos Mail.ReadWrite, Mail.Send
+4. Configurar:
+```bash
+MICROSOFT_CLIENT_ID=tu_client_id
+MICROSOFT_CLIENT_SECRET=tu_client_secret
+MICROSOFT_REDIRECT_URI=http://localhost:3000/api/oauth/microsoft/callback
+```
+
+---
+
+## 📚 Uso
+
+### Agregar Cuenta de Correo
+
+#### Opción 1: IMAP/SMTP (Cualquier proveedor)
+1. Click en "Agregar cuenta"
+2. Seleccionar "Servidor personalizado"
+3. Ingresar:
+   - Email
+   - Contraseña
+   - Servidor IMAP (ej: mail.tudominio.com:993)
+   - Servidor SMTP (ej: mail.tudominio.com:587)
+4. Guardar
+
+#### Opción 2: OAuth2 (Gmail/Outlook)
+1. Click en "Agregar cuenta"
+2. Seleccionar "Gmail" o "Outlook"
+3. Click en "Conectar con OAuth"
+4. Autorizar en Google/Microsoft
+5. ¡Listo!
+
+### Funciones de IA
+
+#### Generar Email
+```
+1. Click "Nuevo mensaje"
+2. Escribir asunto: "Solicitar reunión con equipo"
+3. Click "AI Assistant" → "Generate from subject"
+4. IA genera email completo
+```
+
+#### Búsqueda Inteligente
+```
+Buscar: "facturas del último mes"
+→ IA encuentra todos los correos de:
+  - Categoría: finanzas
+  - Contiene: factura, invoice, pago
+  - Fecha: últimos 30 días
+```
+
+#### Detectar Spam/Phishing
+```
+Correo recibido →
+  IA analiza automáticamente:
+  - ✅ No es spam
+  - ⚠️ Posible phishing (85% confianza)
+  - Razones: "Sender domain mismatch", "Urgency language"
+  - Riesgo: Alto
+```
+
+### Encriptación PGP
+
+#### Generar Claves
+```
+1. Ir a Configuración → Seguridad
+2. Click "Generar par de claves PGP"
+3. Ingresar:
+   - Nombre
+   - Email
+   - Contraseña (passphrase)
+4. Guardar clave pública y privada
+```
+
+#### Enviar Email Encriptado
+```
+1. Componer email
+2. Click "Encrypt" 🔒
+3. Sistema busca clave pública del destinatario
+4. Encripta y firma automáticamente
+5. Enviar
+```
+
+---
+
+## 🛣️ API Endpoints
 
 ### Autenticación
-- `POST /api/auth/register` - Registrar usuario
-- `POST /api/auth/login` - Iniciar sesión
-- `GET /api/auth/me` - Obtener usuario actual
+```http
+POST   /api/auth/register
+POST   /api/auth/login
+GET    /api/auth/me
+```
+
+### OAuth2
+```http
+GET    /api/oauth/gmail/auth-url
+GET    /api/oauth/gmail/callback
+GET    /api/oauth/microsoft/auth-url
+GET    /api/oauth/microsoft/callback
+```
 
 ### Correos
-- `GET /api/email/accounts` - Listar cuentas
-- `POST /api/email/accounts` - Agregar cuenta
-- `GET /api/email/accounts/:id/emails` - Listar correos
-- `GET /api/email/accounts/:id/fetch` - Sincronizar correos
-- `POST /api/email/accounts/:id/send` - Enviar correo
+```http
+GET    /api/email/accounts
+POST   /api/email/accounts
+GET    /api/email/accounts/:id/emails
+POST   /api/email/accounts/:id/send
+```
 
-### Gemini AI
-- `POST /api/gemini/generate` - Generar contenido
-- `POST /api/gemini/improve` - Mejorar borrador
-- `POST /api/gemini/summarize` - Resumir correo
-- `POST /api/gemini/suggest-reply` - Sugerir respuesta
+### IA
+```http
+POST   /api/ai/classify
+POST   /api/ai/detect-spam
+POST   /api/ai/search
+POST   /api/ai/suggest-replies
+```
 
-## Configuración de Cuentas de Correo
+### Encriptación
+```http
+POST   /api/encryption/generate-keypair
+POST   /api/encryption/encrypt-email
+POST   /api/encryption/decrypt-email
+```
 
-### Gmail
-1. Habilita "Acceso de aplicaciones menos seguras" o usa contraseña de aplicación
-2. IMAP: imap.gmail.com:993
-3. SMTP: smtp.gmail.com:587
+Ver [ARCHITECTURE.md](ARCHITECTURE.md) para documentación completa de la API.
 
-### Outlook
-1. IMAP: outlook.office365.com:993
-2. SMTP: smtp.office365.com:587
+---
 
-### Servidor Personalizado
-Configura tus propios servidores IMAP y SMTP
+## 🔒 Seguridad
 
-## Seguridad
+- ✅ JWT con tokens de acceso y refresh
+- ✅ Contraseñas hasheadas con bcrypt
+- ✅ Tokens OAuth2 encriptados en BD
+- ✅ Claves privadas PGP nunca salen del cliente
+- ✅ HTTPS obligatorio en producción
+- ✅ TLS para IMAP/SMTP
+- ✅ Validación y sanitización de entrada
+- ✅ Rate limiting
+- ✅ CORS configurado
 
-- Autenticación con JWT
-- Contraseñas hasheadas con bcrypt
-- HTTPS en producción
-- Variables de entorno para secretos
-- Validación de entrada
+---
 
-## Licencia
+## 📈 Rendimiento
 
-MIT
+- ⚡ Sincronización paralela de cuentas
+- 💾 Caché inteligente con Redis
+- 🔄 Procesamiento asíncrono de IA
+- 📦 Paginación y lazy loading
+- 🗜️ Compresión HTTP
+- 🏊 Connection pooling
 
-## Soporte
+---
 
-Para reportar problemas o solicitar características, abre un issue en GitHub.
+## 🤝 Contribuir
 
-## Créditos
+¡Las contribuciones son bienvenidas! Por favor:
 
-- Desarrollado con ❤️ usando Gemini AI
+1. Fork el proyecto
+2. Crea una rama para tu feature (`git checkout -b feature/AmazingFeature`)
+3. Commit tus cambios (`git commit -m 'Add some AmazingFeature'`)
+4. Push a la rama (`git push origin feature/AmazingFeature`)
+5. Abre un Pull Request
+
+---
+
+## 📄 Licencia
+
+Este proyecto está bajo la Licencia MIT. Ver [LICENSE](LICENSE) para más detalles.
+
+---
+
+## 🙏 Agradecimientos
+
+- Powered by [Gemini AI](https://deepmind.google/technologies/gemini/)
 - Diseño inspirado en Gmail y Outlook
-- Iconos de Material Icons
+- Iconos de [Material Icons](https://fonts.google.com/icons)
+
+---
+
+## 📞 Soporte
+
+- 📧 Email: support@gemini-mail.com
+- 🐛 Issues: [GitHub Issues](https://github.com/tu-usuario/gemini-mail/issues)
+- 📖 Docs: [Wiki](https://github.com/tu-usuario/gemini-mail/wiki)
+
+---
+
+**¡Disfruta de Gemini Mail!** 🚀✨
