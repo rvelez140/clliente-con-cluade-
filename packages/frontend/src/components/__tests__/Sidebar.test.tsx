@@ -3,9 +3,11 @@ import { render, screen, fireEvent } from '@testing-library/react';
 import { BrowserRouter } from 'react-router-dom';
 import Sidebar from '../Sidebar';
 
+const mockOnCompose = vi.fn();
+
 const MockedSidebar = () => (
   <BrowserRouter>
-    <Sidebar />
+    <Sidebar onCompose={mockOnCompose} />
   </BrowserRouter>
 );
 
@@ -20,28 +22,28 @@ describe('Sidebar Component', () => {
   it('should contain inbox navigation item', () => {
     render(<MockedSidebar />);
 
-    const inboxItem = screen.getByText(/Bandeja de entrada/i);
+    const inboxItem = screen.getByText(/inbox/i);
     expect(inboxItem).toBeInTheDocument();
   });
 
   it('should contain sent navigation item', () => {
     render(<MockedSidebar />);
 
-    const sentItem = screen.getByText(/Enviados/i);
+    const sentItem = screen.getByText(/sent/i);
     expect(sentItem).toBeInTheDocument();
   });
 
   it('should contain drafts navigation item', () => {
     render(<MockedSidebar />);
 
-    const draftsItem = screen.getByText(/Borradores/i);
+    const draftsItem = screen.getByText(/drafts/i);
     expect(draftsItem).toBeInTheDocument();
   });
 
   it('should have compose button', () => {
     render(<MockedSidebar />);
 
-    const composeButton = screen.getByRole('button', { name: /redactar/i });
+    const composeButton = screen.getByRole('button', { name: /new message/i });
     expect(composeButton).toBeInTheDocument();
   });
 
@@ -52,14 +54,14 @@ describe('Sidebar Component', () => {
     const SidebarWithHandler = () => (
       <BrowserRouter>
         <div>
-          <button onClick={handleClick}>Redactar</button>
+          <button onClick={handleClick}>New message</button>
         </div>
       </BrowserRouter>
     );
 
     render(<SidebarWithHandler />);
 
-    const button = screen.getByRole('button', { name: /redactar/i });
+    const button = screen.getByRole('button', { name: /new message/i });
     fireEvent.click(button);
 
     expect(handleClick).toHaveBeenCalledTimes(1);

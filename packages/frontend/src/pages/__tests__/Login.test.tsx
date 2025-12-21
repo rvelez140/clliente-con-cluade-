@@ -120,11 +120,11 @@ describe('Login Page', () => {
     });
   });
 
-  it('should have a link to register page', () => {
+  it('should have a tab to switch to register', () => {
     render(<MockedLogin />);
 
-    const registerLink = screen.getByText(/crear cuenta/i);
-    expect(registerLink).toBeInTheDocument();
+    const registerTab = screen.getByText(/registrarse/i);
+    expect(registerTab).toBeInTheDocument();
   });
 
   it('should disable submit button while loading', async () => {
