@@ -34,14 +34,39 @@ jobs:
         working-directory: packages/backend
         run: npm run test:ci
 
+      - name: Check coverage threshold
+        working-directory: packages/backend
+        run: |
+          if [ -f coverage/coverage-summary.json ]; then
+            LINES=$(cat coverage/coverage-summary.json | jq '.total.lines.pct')
+            FUNCS=$(cat coverage/coverage-summary.json | jq '.total.functions.pct')
+            BRANCHES=$(cat coverage/coverage-summary.json | jq '.total.branches.pct')
+            STMTS=$(cat coverage/coverage-summary.json | jq '.total.statements.pct')
+
+            echo "📊 Backend Coverage Report:"
+            echo "  Lines:      ${LINES}%"
+            echo "  Functions:  ${FUNCS}%"
+            echo "  Branches:   ${BRANCHES}%"
+            echo "  Statements: ${STMTS}%"
+
+            if (( $(echo "$LINES < 70" | bc -l) )); then
+              echo "❌ Line coverage ${LINES}% is below threshold (70%)"
+              exit 1
+            fi
+            echo "✅ Coverage meets minimum threshold"
+          else
+            echo "⚠️ Coverage summary not found"
+            exit 1
+          fi
+
       - name: Upload backend coverage
         uses: codecov/codecov-action@v4
         if: always()
-        continue-on-error: true
         with:
           files: ./packages/backend/coverage/lcov.info
           flags: backend
           name: backend-coverage
+          fail_ci_if_error: true
 
   test-frontend:
     name: Test Frontend
@@ -65,14 +90,40 @@ jobs:
         working-directory: packages/frontend
         run: npm run test:coverage
 
+      - name: Check frontend coverage
+        working-directory: packages/frontend
+        run: |
+          if [ -f coverage/coverage-summary.json ]; then
+            LINES=$(cat coverage/coverage-summary.json | jq '.total.lines.pct')
+            FUNCS=$(cat coverage/coverage-summary.json | jq '.total.functions.pct')
+            BRANCHES=$(cat coverage/coverage-summary.json | jq '.total.branches.pct')
+            STMTS=$(cat coverage/coverage-summary.json | jq '.total.statements.pct')
+
+            echo "📊 Frontend Coverage Report:"
+            echo "  Lines:      ${LINES}%"
+            echo "  Functions:  ${FUNCS}%"
+            echo "  Branches:   ${BRANCHES}%"
+            echo "  Statements: ${STMTS}%"
+
+            if (( $(echo "$LINES < 70" | bc -l) )); then
+              echo "⚠️ Line coverage ${LINES}% is below target (70%)"
+              echo "Note: Frontend coverage will be enforced in future releases"
+              # No exit 1 por ahora para frontend
+            else
+              echo "✅ Coverage meets minimum threshold"
+            fi
+          else
+            echo "⚠️ Coverage summary not found"
+          fi
+
       - name: Upload frontend coverage
         uses: codecov/codecov-action@v4
         if: always()
-        continue-on-error: true
         with:
           files: ./packages/frontend/coverage/lcov.info
           flags: frontend
           name: frontend-coverage
+          fail_ci_if_error: true
 
   test-build:
     name: Build Docker Images
