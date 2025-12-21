@@ -25,3 +25,6 @@ uploads/
 .electron-builder/
 out/
 release/
+
+# Archivos de secretos (no subir al repositorio)
+SECRETS.md

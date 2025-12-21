@@ -1,0 +1,127 @@
+name: Deploy to VPS
+
+on:
+  push:
+    branches:
+      - main
+      - claude/docker-vps-deployment-OmAKA
+  workflow_dispatch:
+
+env:
+  REGISTRY: ghcr.io
+  IMAGE_NAME: ${{ github.repository }}
+
+jobs:
+  build-and-push:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      packages: write
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Log in to GitHub Container Registry
+        uses: docker/login-action@v3
+        with:
+          registry: ${{ env.REGISTRY }}
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Extract metadata for backend
+        id: meta-backend
+        uses: docker/metadata-action@v5
+        with:
+          images: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}/backend
+          tags: |
+            type=ref,event=branch
+            type=sha,prefix={{branch}}-
+            type=raw,value=latest,enable={{is_default_branch}}
+
+      - name: Build and push backend image
+        uses: docker/build-push-action@v5
+        with:
+          context: ./packages/backend
+          file: ./packages/backend/Dockerfile
+          push: true
+          tags: ${{ steps.meta-backend.outputs.tags }}
+          labels: ${{ steps.meta-backend.outputs.labels }}
+
+      - name: Extract metadata for frontend
+        id: meta-frontend
+        uses: docker/metadata-action@v5
+        with:
+          images: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}/frontend
+          tags: |
+            type=ref,event=branch
+            type=sha,prefix={{branch}}-
+            type=raw,value=latest,enable={{is_default_branch}}
+
+      - name: Build and push frontend image
+        uses: docker/build-push-action@v5
+        with:
+          context: ./packages/frontend
+          file: ./packages/frontend/Dockerfile
+          push: true
+          tags: ${{ steps.meta-frontend.outputs.tags }}
+          labels: ${{ steps.meta-frontend.outputs.labels }}
+
+  deploy:
+    needs: build-and-push
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Deploy to VPS
+        uses: appleboy/ssh-action@v1.0.3
+        env:
+          REGISTRY: ${{ env.REGISTRY }}
+          IMAGE_NAME: ${{ env.IMAGE_NAME }}
+          BRANCH: ${{ github.ref_name }}
+          DB_PASSWORD: ${{ secrets.DB_PASSWORD }}
+          JWT_SECRET: ${{ secrets.JWT_SECRET }}
+          GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
+        with:
+          host: ${{ secrets.VPS_HOST }}
+          username: ${{ secrets.VPS_USERNAME }}
+          key: ${{ secrets.VPS_SSH_KEY }}
+          port: 22
+          envs: REGISTRY,IMAGE_NAME,BRANCH,DB_PASSWORD,JWT_SECRET,GEMINI_API_KEY
+          script: |
+            # Crear directorio de aplicación si no existe
+            mkdir -p /root/gemini-mail
+            cd /root/gemini-mail
+
+            # Descargar archivos de configuración
+            curl -sL https://raw.githubusercontent.com/${{ github.repository }}/${{ github.ref_name }}/docker-compose.prod.yml -o docker-compose.yml
+
+            # Crear archivo .env
+            cat > .env << EOF
+            DB_PASSWORD=${DB_PASSWORD}
+            JWT_SECRET=${JWT_SECRET}
+            GEMINI_API_KEY=${GEMINI_API_KEY}
+            BACKEND_IMAGE=${REGISTRY}/${IMAGE_NAME}/backend:${BRANCH}
+            FRONTEND_IMAGE=${REGISTRY}/${IMAGE_NAME}/frontend:${BRANCH}
+            EOF
+
+            # Login a GitHub Container Registry
+            echo ${{ secrets.GITHUB_TOKEN }} | docker login ghcr.io -u ${{ github.actor }} --password-stdin
+
+            # Detener contenedores antiguos
+            docker-compose down || true
+
+            # Pull nuevas imágenes
+            docker pull ${REGISTRY}/${IMAGE_NAME}/backend:${BRANCH}
+            docker pull ${REGISTRY}/${IMAGE_NAME}/frontend:${BRANCH}
+
+            # Iniciar servicios
+            docker-compose up -d
+
+            # Limpiar imágenes antiguas
+            docker image prune -af
+
+            # Mostrar estado
+            docker-compose ps
