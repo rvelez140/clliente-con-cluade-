@@ -1,14 +1,14 @@
-import textToSpeech from '@google-cloud/text-to-speech';
+import { TextToSpeechClient } from '@google-cloud/text-to-speech';
 import { config } from '../config';
 
 export class TextToSpeechService {
-  private client: textToSpeech.TextToSpeechClient | null = null;
+  private client: TextToSpeechClient | null = null;
 
   constructor() {
     // Solo inicializar si hay credenciales configuradas
     if (process.env.GOOGLE_APPLICATION_CREDENTIALS || config.gemini?.apiKey) {
       try {
-        this.client = new textToSpeech.TextToSpeechClient();
+        this.client = new TextToSpeechClient();
       } catch (error) {
         console.warn('Text-to-Speech no configurado, usando funcionalidad limitada');
       }
@@ -26,10 +26,10 @@ export class TextToSpeechService {
         input: { text },
         voice: {
           languageCode,
-          ssmlGender: textToSpeech.protos.google.cloud.texttospeech.v1.SsmlVoiceGender.NEUTRAL,
+          ssmlGender: 'NEUTRAL' as const,
         },
         audioConfig: {
-          audioEncoding: textToSpeech.protos.google.cloud.texttospeech.v1.AudioEncoding.MP3,
+          audioEncoding: 'MP3' as const,
         },
       };
 

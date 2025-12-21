@@ -27,6 +27,8 @@ export interface ScheduledEmail {
   sentAt?: Date;
 }
 
+type ValidTone = 'formal' | 'casual' | 'friendly' | 'professional';
+
 export class ScheduledEmailService {
   private emailService: EmailService;
   private geminiService: GeminiService;
@@ -36,6 +38,14 @@ export class ScheduledEmailService {
     this.emailService = new EmailService();
     this.geminiService = new GeminiService();
     this.unifiedEmailService = new UnifiedEmailService();
+  }
+
+  private validateTone(tone?: string): ValidTone {
+    const validTones: ValidTone[] = ['formal', 'casual', 'friendly', 'professional'];
+    if (tone && validTones.includes(tone as ValidTone)) {
+      return tone as ValidTone;
+    }
+    return 'professional';
   }
 
   async createScheduledEmail(email: ScheduledEmail): Promise<number> {
@@ -48,7 +58,7 @@ export class ScheduledEmailService {
         const aiResult = await this.geminiService.generateEmailContent({
           prompt: email.aiPrompt,
           context: email.body || '',
-          tone: email.aiTone || 'professional',
+          tone: this.validateTone(email.aiTone),
           length: 'medium',
         });
         finalBody = aiResult.text;
@@ -57,7 +67,7 @@ export class ScheduledEmailService {
         if (!email.subject || email.subject.trim() === '') {
           const subjectResult = await this.geminiService.generateEmailContent({
             prompt: `Genera solo un asunto conciso y profesional para este correo: ${aiResult.text.substring(0, 200)}`,
-            tone: email.aiTone || 'professional',
+            tone: this.validateTone(email.aiTone),
             length: 'short',
           });
           finalSubject = subjectResult.text.replace(/^(Asunto:|Subject:)/i, '').trim();
@@ -331,14 +341,14 @@ export class ScheduledEmailService {
       const bodyResult = await this.geminiService.generateEmailContent({
         prompt,
         context,
-        tone: tone || 'professional',
+        tone: this.validateTone(tone),
         length: 'medium',
       });
 
       // Generar el asunto
       const subjectResult = await this.geminiService.generateEmailContent({
         prompt: `Genera solo un asunto conciso y profesional (máximo 10 palabras) para este correo: ${bodyResult.text.substring(0, 200)}`,
-        tone: tone || 'professional',
+        tone: this.validateTone(tone),
         length: 'short',
       });
 
