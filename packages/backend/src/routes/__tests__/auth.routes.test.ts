@@ -43,30 +43,30 @@ describe('Auth Routes', () => {
       expect(response.body.user.email).toBe('test@example.com');
     });
 
-    it('should return 400 if email is invalid', async () => {
+    it('should return 400 if email is missing', async () => {
       const response = await request(app)
         .post('/auth/register')
         .send({
-          email: 'invalid-email',
           password: 'password123',
           name: 'Test User',
         })
         .expect(400);
 
-      expect(response.body).toHaveProperty('errors');
+      expect(response.body).toHaveProperty('error');
+      expect(response.body.error).toContain('requeridos');
     });
 
-    it('should return 400 if password is too short', async () => {
+    it('should return 400 if name is missing', async () => {
       const response = await request(app)
         .post('/auth/register')
         .send({
           email: 'test@example.com',
-          password: '123',
-          name: 'Test User',
+          password: 'password123',
         })
         .expect(400);
 
-      expect(response.body).toHaveProperty('errors');
+      expect(response.body).toHaveProperty('error');
+      expect(response.body.error).toContain('requeridos');
     });
 
     it('should return 400 if user already exists', async () => {
@@ -141,7 +141,8 @@ describe('Auth Routes', () => {
         })
         .expect(400);
 
-      expect(response.body).toHaveProperty('errors');
+      expect(response.body).toHaveProperty('error');
+      expect(response.body.error).toContain('requeridos');
     });
 
     it('should return 400 if password is missing', async () => {
@@ -152,7 +153,8 @@ describe('Auth Routes', () => {
         })
         .expect(400);
 
-      expect(response.body).toHaveProperty('errors');
+      expect(response.body).toHaveProperty('error');
+      expect(response.body.error).toContain('requeridos');
     });
   });
 

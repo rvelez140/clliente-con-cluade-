@@ -1,11 +1,26 @@
 import { describe, it, expect, vi } from 'vitest';
-import { render, screen, fireEvent } from '@testing-library/react';
+import { render, screen } from '@testing-library/react';
 import { BrowserRouter } from 'react-router-dom';
 import Sidebar from '../Sidebar';
+import { AuthProvider } from '../../contexts/AuthContext';
+import { ThemeProvider } from '../../contexts/ThemeContext';
 
-const MockedSidebar = () => (
+// Mock de API para evitar errores de localStorage y network
+vi.mock('../../services/api', () => ({
+  authApi: {
+    me: vi.fn(),
+    login: vi.fn(),
+    register: vi.fn(),
+  },
+}));
+
+const MockedSidebar = ({ onCompose = vi.fn() }) => (
   <BrowserRouter>
-    <Sidebar />
+    <ThemeProvider>
+      <AuthProvider>
+        <Sidebar onCompose={onCompose} />
+      </AuthProvider>
+    </ThemeProvider>
   </BrowserRouter>
 );
 
@@ -20,49 +35,29 @@ describe('Sidebar Component', () => {
   it('should contain inbox navigation item', () => {
     render(<MockedSidebar />);
 
-    const inboxItem = screen.getByText(/Bandeja de entrada/i);
+    const inboxItem = screen.getByText(/Inbox/i);
     expect(inboxItem).toBeInTheDocument();
   });
 
   it('should contain sent navigation item', () => {
     render(<MockedSidebar />);
 
-    const sentItem = screen.getByText(/Enviados/i);
+    const sentItem = screen.getByText(/Sent/i);
     expect(sentItem).toBeInTheDocument();
   });
 
   it('should contain drafts navigation item', () => {
     render(<MockedSidebar />);
 
-    const draftsItem = screen.getByText(/Borradores/i);
+    const draftsItem = screen.getByText(/Drafts/i);
     expect(draftsItem).toBeInTheDocument();
   });
 
   it('should have compose button', () => {
     render(<MockedSidebar />);
 
-    const composeButton = screen.getByRole('button', { name: /redactar/i });
+    const composeButton = screen.getByRole('button', { name: /new message/i });
     expect(composeButton).toBeInTheDocument();
-  });
-
-  it('should call onClick when compose button is clicked', () => {
-    const handleClick = vi.fn();
-
-    // Mock del componente con handler
-    const SidebarWithHandler = () => (
-      <BrowserRouter>
-        <div>
-          <button onClick={handleClick}>Redactar</button>
-        </div>
-      </BrowserRouter>
-    );
-
-    render(<SidebarWithHandler />);
-
-    const button = screen.getByRole('button', { name: /redactar/i });
-    fireEvent.click(button);
-
-    expect(handleClick).toHaveBeenCalledTimes(1);
   });
 
   it('should highlight active navigation item', () => {

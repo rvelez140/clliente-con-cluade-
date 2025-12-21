@@ -2,11 +2,20 @@ import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { render, screen, fireEvent, waitFor } from '@testing-library/react';
 import { BrowserRouter } from 'react-router-dom';
 import Login from '../Login';
-import axios from 'axios';
+import { AuthProvider } from '../../contexts/AuthContext';
 
-// Mock de axios
-vi.mock('axios');
-const mockedAxios = axios as any;
+// Mock de la API
+const mockLogin = vi.fn();
+const mockRegister = vi.fn();
+const mockMe = vi.fn();
+
+vi.mock('../../services/api', () => ({
+  authApi: {
+    login: (...args: any[]) => mockLogin(...args),
+    register: (...args: any[]) => mockRegister(...args),
+    me: (...args: any[]) => mockMe(...args),
+  },
+}));
 
 // Mock de react-router-dom
 const mockedNavigate = vi.fn();
@@ -20,13 +29,16 @@ vi.mock('react-router-dom', async () => {
 
 const MockedLogin = () => (
   <BrowserRouter>
-    <Login />
+    <AuthProvider>
+      <Login />
+    </AuthProvider>
   </BrowserRouter>
 );
 
 describe('Login Page', () => {
   beforeEach(() => {
     vi.clearAllMocks();
+    localStorage.clear();
   });
 
   it('should render login form', () => {
@@ -73,11 +85,11 @@ describe('Login Page', () => {
     const mockResponse = {
       data: {
         token: 'mock_token',
-        user: { id: '1', email: 'test@example.com' },
+        user: { id: '1', email: 'test@example.com', name: 'Test User' },
       },
     };
 
-    mockedAxios.post.mockResolvedValueOnce(mockResponse);
+    mockLogin.mockResolvedValueOnce(mockResponse);
 
     render(<MockedLogin />);
 
@@ -90,18 +102,12 @@ describe('Login Page', () => {
     fireEvent.click(submitButton);
 
     await waitFor(() => {
-      expect(mockedAxios.post).toHaveBeenCalledWith(
-        expect.stringContaining('/auth/login'),
-        expect.objectContaining({
-          email: 'test@example.com',
-          password: 'password123',
-        })
-      );
+      expect(mockLogin).toHaveBeenCalledWith('test@example.com', 'password123');
     });
   });
 
   it('should show error message on failed login', async () => {
-    mockedAxios.post.mockRejectedValueOnce({
+    mockLogin.mockRejectedValueOnce({
       response: { data: { error: 'Credenciales inválidas' } },
     });
 
@@ -115,20 +121,26 @@ describe('Login Page', () => {
     fireEvent.change(passwordInput, { target: { value: 'wrongpassword' } });
     fireEvent.click(submitButton);
 
+    // Esperar a que el login sea llamado
     await waitFor(() => {
-      expect(screen.getByText(/error/i)).toBeInTheDocument();
+      expect(mockLogin).toHaveBeenCalled();
+    });
+
+    // Esperar a que el mensaje de error aparezca
+    await waitFor(() => {
+      expect(screen.getByText(/Credenciales inválidas/i)).toBeInTheDocument();
     });
   });
 
-  it('should have a link to register page', () => {
+  it('should have a tab to switch to register page', () => {
     render(<MockedLogin />);
 
-    const registerLink = screen.getByText(/crear cuenta/i);
-    expect(registerLink).toBeInTheDocument();
+    const registerTab = screen.getByRole('tab', { name: /registrarse/i });
+    expect(registerTab).toBeInTheDocument();
   });
 
   it('should disable submit button while loading', async () => {
-    mockedAxios.post.mockImplementation(
+    mockLogin.mockImplementation(
       () => new Promise((resolve) => setTimeout(resolve, 1000))
     );
 
@@ -143,6 +155,8 @@ describe('Login Page', () => {
     fireEvent.click(submitButton);
 
     // El botón debería estar deshabilitado mientras se procesa
-    expect(submitButton).toBeDisabled();
+    await waitFor(() => {
+      expect(submitButton).toBeDisabled();
+    });
   });
 });
