@@ -42,6 +42,8 @@ jobs:
         run: |
           # Remove trailing hyphens and convert to lowercase for valid Docker image names
           REPO_NAME=$(echo "${{ github.repository }}" | sed 's/-*$//' | tr '[:upper:]' '[:lower:]')
+          echo "Original: ${{ github.repository }}"
+          echo "Normalized: ${REPO_NAME}"
           echo "name=${REPO_NAME}" >> $GITHUB_OUTPUT
 
       - name: Extract metadata for ${{ matrix.service }}
