@@ -4,6 +4,7 @@ import { CssBaseline } from '@mui/material';
 import { AuthProvider, useAuth } from './contexts/AuthContext';
 import { ThemeProvider } from './contexts/ThemeContext';
 import Login from './pages/Login';
+import VPSLogin from './pages/VPSLogin';
 import Home from './pages/Home';
 
 const PrivateRoute: React.FC<{ children: React.ReactNode }> = ({ children }) => {
@@ -24,6 +25,7 @@ const App: React.FC = () => {
           <CssBaseline />
           <Routes>
             <Route path="/login" element={<Login />} />
+            <Route path="/vps-login" element={<VPSLogin />} />
             <Route
               path="/"
               element={
