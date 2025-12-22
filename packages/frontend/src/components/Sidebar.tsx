@@ -22,15 +22,18 @@ import {
   AccountCircle,
   Brightness4,
   Brightness7,
+  Schedule,
 } from '@mui/icons-material';
 import { useAuth } from '../contexts/AuthContext';
 import { useTheme } from '../contexts/ThemeContext';
 
 interface SidebarProps {
   onCompose: () => void;
+  onScheduledEmails?: () => void;
+  onScheduleEmail?: () => void;
 }
 
-const Sidebar: React.FC<SidebarProps> = ({ onCompose }) => {
+const Sidebar: React.FC<SidebarProps> = ({ onCompose, onScheduledEmails, onScheduleEmail }) => {
   const { logout, user } = useAuth();
   const { currentTheme, setTheme, toggleDarkMode, isDarkMode } = useTheme();
   const [anchorEl, setAnchorEl] = React.useState<null | HTMLElement>(null);
@@ -48,6 +51,7 @@ const Sidebar: React.FC<SidebarProps> = ({ onCompose }) => {
     { icon: <StarBorder />, text: 'Starred' },
     { icon: <Send />, text: 'Sent' },
     { icon: <Drafts />, text: 'Drafts' },
+    { icon: <Schedule />, text: 'Scheduled', onClick: onScheduledEmails },
     { icon: <Delete />, text: 'Trash' },
   ];
 
@@ -120,16 +124,33 @@ const Sidebar: React.FC<SidebarProps> = ({ onCompose }) => {
             textTransform: 'none',
             borderRadius: 2,
             py: 1.5,
+            mb: 1,
           }}
         >
           New message
         </Button>
+        {onScheduleEmail && (
+          <Button
+            variant="outlined"
+            fullWidth
+            onClick={onScheduleEmail}
+            startIcon={<Schedule />}
+            sx={{
+              textTransform: 'none',
+              borderRadius: 2,
+              py: 1.5,
+            }}
+          >
+            Schedule email
+          </Button>
+        )}
       </Box>
 
       <List sx={{ px: 1 }}>
         {menuItems.map((item) => (
           <ListItem key={item.text} disablePadding>
             <ListItemButton
+              onClick={item.onClick}
               sx={{
                 borderRadius: 1,
                 '&:hover': {

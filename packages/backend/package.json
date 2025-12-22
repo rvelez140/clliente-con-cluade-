@@ -13,6 +13,7 @@
     "test:ci": "jest --ci --coverage --maxWorkers=2"
   },
   "dependencies": {
+    "@google-cloud/text-to-speech": "^6.4.0",
     "@google/generative-ai": "^0.21.0",
     "@microsoft/microsoft-graph-client": "^3.0.7",
     "bcrypt": "^5.1.1",
@@ -24,6 +25,7 @@
     "imap": "^0.8.19",
     "jsonwebtoken": "^9.0.2",
     "mailparser": "^3.7.1",
+    "node-cron": "^4.2.1",
     "nodemailer": "^6.9.13",
     "openpgp": "^5.11.2",
     "pg": "^8.11.5",
@@ -39,6 +41,7 @@
     "@types/jsonwebtoken": "^9.0.6",
     "@types/mailparser": "^3.4.6",
     "@types/node": "^20.12.7",
+    "@types/node-cron": "^3.0.11",
     "@types/nodemailer": "^6.4.15",
     "@types/pg": "^8.11.5",
     "@types/supertest": "^6.0.2",

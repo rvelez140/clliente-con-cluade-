@@ -5,6 +5,7 @@ import geminiRoutes from './gemini.routes';
 import oauthRoutes from './oauth.routes';
 import aiRoutes from './ai.routes';
 import encryptionRoutes from './encryption.routes';
+import scheduledEmailRoutes from './scheduled-email.routes';
 
 const router = Router();
 
@@ -14,6 +15,7 @@ router.use('/gemini', geminiRoutes);
 router.use('/oauth', oauthRoutes);
 router.use('/ai', aiRoutes);
 router.use('/encryption', encryptionRoutes);
+router.use('/api', scheduledEmailRoutes);
 
 router.get('/health', (req, res) => {
   res.json({ status: 'ok', timestamp: new Date().toISOString() });
