@@ -5,6 +5,8 @@ import microsoftGraphService from './microsoft-graph.service';
 import aiClassifierService from './ai-classifier.service';
 import smartSearchService from './smart-search.service';
 import encryptionService from './encryption.service';
+import emailSignatureService from './email-signature.service';
+import avatarService from './avatar.service';
 
 /**
  * Servicio unificado que gestiona múltiples cuentas de correo
@@ -23,6 +25,9 @@ export class UnifiedEmailService {
     } else {
       emails = await this.fetchEmailsViaImap(account, folder, limit);
     }
+
+    // Enriquecer correos con avatares
+    this.enrichEmailsWithAvatars(emails);
 
     // Procesar correos con IA (clasificación, detección de spam, etc.)
     await this.enrichEmailsWithAI(emails);
@@ -68,14 +73,23 @@ export class UnifiedEmailService {
     bcc?: string[],
     attachments?: any[],
     encrypt?: boolean,
-    recipientPublicKeys?: string[]
+    recipientPublicKeys?: string[],
+    includeSignature: boolean = true
   ): Promise<void> {
     let finalBody = body;
+
+    // Agregar firma si está configurada
+    if (includeSignature) {
+      const signature = await emailSignatureService.getUserSignature(account.userId);
+      if (signature) {
+        finalBody = emailSignatureService.appendSignature(finalBody, signature);
+      }
+    }
 
     // Encriptar si es necesario
     if (encrypt && recipientPublicKeys && recipientPublicKeys.length > 0) {
       const encryptedContent = await encryptionService.encryptEmail(
-        { subject, body, attachments: [] },
+        { subject, body: finalBody, attachments: [] },
         recipientPublicKeys[0], // TODO: manejar múltiples destinatarios
         account.accessToken || '', // Usar la clave privada del usuario
         '' // TODO: obtener passphrase del usuario
@@ -221,6 +235,43 @@ export class UnifiedEmailService {
     attachments?: any[]
   ): Promise<void> {
     await emailService.sendEmail(account, to, subject, body, cc, bcc, attachments);
+  }
+
+  private enrichEmailsWithAvatars(emails: Email[]): void {
+    // Agregar avatares a cada correo basado en el remitente
+    emails.forEach(email => {
+      try {
+        // Extraer email del remitente (puede venir en formato "Name <email@domain.com>")
+        const fromEmail = this.extractEmailAddress(email.from);
+        const fromName = this.extractName(email.from);
+
+        if (fromEmail) {
+          // Generar avatar usando Gravatar
+          email.fromAvatar = avatarService.generateGravatarUrl(fromEmail, 40);
+          email.fromName = fromName || fromEmail;
+        }
+      } catch (error) {
+        console.error('Error generating avatar for email:', error);
+      }
+    });
+  }
+
+  private extractEmailAddress(fromString: string): string {
+    // Formato: "Name <email@domain.com>" o "email@domain.com"
+    const match = fromString.match(/<(.+?)>/);
+    if (match && match[1]) {
+      return match[1];
+    }
+    return fromString.trim();
+  }
+
+  private extractName(fromString: string): string | undefined {
+    // Formato: "Name <email@domain.com>"
+    const match = fromString.match(/^(.+?)\s*</);
+    if (match && match[1]) {
+      return match[1].trim().replace(/"/g, '');
+    }
+    return undefined;
   }
 
   private async enrichEmailsWithAI(emails: Email[]): Promise<void> {
