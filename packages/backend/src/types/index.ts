@@ -31,6 +31,8 @@ export interface Email {
   accountId: string;
   messageId: string;
   from: string;
+  fromName?: string;
+  fromAvatar?: string;
   to: string[];
   cc?: string[];
   bcc?: string[];
@@ -69,6 +71,9 @@ export interface UserSettings {
   signature?: string;
   autoReply?: boolean;
   autoReplyMessage?: string;
+  avatarType?: 'gravatar' | 'initials' | 'custom';
+  avatarUrl?: string;
+  avatarBackgroundColor?: string;
   createdAt: Date;
   updatedAt: Date;
 }
