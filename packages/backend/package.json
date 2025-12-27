@@ -10,7 +10,21 @@
     "migrate": "node dist/scripts/migrate.js",
     "test": "jest --coverage",
     "test:watch": "jest --watch",
-    "test:ci": "jest --ci --coverage --maxWorkers=2"
+    "test:ci": "jest --ci --coverage --maxWorkers=2",
+    "setup": "node scripts/setup-check.js",
+    "setup:linux": "chmod +x setup.sh && ./setup.sh",
+    "setup:windows": "powershell -ExecutionPolicy Bypass -File setup.ps1",
+    "verify": "node scripts/verify-installation.js",
+    "postinstall": "node scripts/setup-check.js",
+    "db:migrate": "psql -U postgres -d gemini_mail -f src/scripts/init-db.sql",
+    "db:reset": "psql -U postgres -c 'DROP DATABASE IF EXISTS gemini_mail' && psql -U postgres -c 'CREATE DATABASE gemini_mail' && npm run db:migrate",
+    "generate:env": "node scripts/generate-env.js",
+    "generate:key": "node -e \"console.log('PASSWORD_ENCRYPTION_KEY=' + require('crypto').randomBytes(32).toString('hex'))\"",
+    "logs:clean": "rm -rf logs/*.log",
+    "logs:tail": "tail -f logs/combined.log",
+    "redis:start": "redis-server",
+    "redis:cli": "redis-cli",
+    "queue:stats": "node scripts/queue-stats.js"
   },
   "dependencies": {
     "@google-cloud/text-to-speech": "^6.4.0",
