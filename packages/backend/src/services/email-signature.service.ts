@@ -11,6 +11,13 @@ export interface EmailSignature {
   customHtml?: string;
   includeAvatar?: boolean;
   avatarUrl?: string;
+  backgroundImageUrl?: string;
+  backgroundColor?: string;
+  backgroundSize?: 'cover' | 'contain' | 'auto';
+  backgroundPosition?: string;
+  backgroundRepeat?: 'no-repeat' | 'repeat' | 'repeat-x' | 'repeat-y';
+  padding?: string;
+  borderRadius?: string;
 }
 
 /**
@@ -50,7 +57,14 @@ export class EmailSignatureService {
       website,
       customHtml,
       includeAvatar,
-      avatarUrl
+      avatarUrl,
+      backgroundImageUrl,
+      backgroundColor,
+      backgroundSize = 'cover',
+      backgroundPosition = 'center',
+      backgroundRepeat = 'no-repeat',
+      padding = '15px',
+      borderRadius = '0px'
     } = signature;
 
     // Si hay HTML personalizado, usarlo
@@ -58,12 +72,46 @@ export class EmailSignatureService {
       return customHtml;
     }
 
+    // Construir estilos de fondo
+    const backgroundStyles: string[] = [];
+
+    if (backgroundImageUrl) {
+      backgroundStyles.push(`background-image: url('${this.escapeHtml(backgroundImageUrl)}')`);
+      backgroundStyles.push(`background-size: ${backgroundSize}`);
+      backgroundStyles.push(`background-position: ${backgroundPosition}`);
+      backgroundStyles.push(`background-repeat: ${backgroundRepeat}`);
+    }
+
+    if (backgroundColor) {
+      backgroundStyles.push(`background-color: ${backgroundColor}`);
+    }
+
     // Generar firma estándar
-    let html = '<div style="font-family: Arial, sans-serif; font-size: 14px; color: #333; margin-top: 20px; border-top: 2px solid #e0e0e0; padding-top: 15px;">';
+    const baseStyles = [
+      'font-family: Arial, sans-serif',
+      'font-size: 14px',
+      'color: #333',
+      'margin-top: 20px',
+      'border-top: 2px solid #e0e0e0',
+      `padding: ${padding}`,
+      `border-radius: ${borderRadius}`,
+      'position: relative',
+      'overflow: hidden'
+    ];
+
+    // Si hay imagen de fondo, agregar overlay para mejorar legibilidad
+    const hasBackgroundImage = !!backgroundImageUrl;
+    let html = `<div style="${[...baseStyles, ...backgroundStyles].join('; ')};">`;
+
+    // Agregar overlay semitransparente si hay imagen de fondo
+    if (hasBackgroundImage) {
+      html += '<div style="position: absolute; top: 0; left: 0; right: 0; bottom: 0; background: rgba(255, 255, 255, 0.85); z-index: 1;"></div>';
+      html += '<div style="position: relative; z-index: 2;">';
+    }
 
     // Agregar avatar si está configurado
     if (includeAvatar && avatarUrl) {
-      html += `<img src="${avatarUrl}" alt="Avatar" style="width: 80px; height: 80px; border-radius: 50%; margin-bottom: 10px; display: block;" />`;
+      html += `<img src="${avatarUrl}" alt="Avatar" style="width: 80px; height: 80px; border-radius: 50%; margin-bottom: 10px; display: block; border: 3px solid #fff; box-shadow: 0 2px 4px rgba(0,0,0,0.1);" />`;
     }
 
     if (name) {
@@ -84,6 +132,10 @@ export class EmailSignatureService {
 
     if (website) {
       html += `<a href="${this.escapeHtml(website)}" style="color: #0066cc; text-decoration: none;">${this.escapeHtml(website)}</a><br/>`;
+    }
+
+    if (hasBackgroundImage) {
+      html += '</div>'; // Cerrar div de contenido con z-index
     }
 
     html += '</div>';
@@ -219,6 +271,57 @@ export class EmailSignatureService {
       console.error('Error creando firma del usuario:', error);
       return false;
     }
+  }
+
+  /**
+   * Valida si una URL de imagen es válida
+   */
+  isValidImageUrl(url: string): boolean {
+    try {
+      const parsedUrl = new URL(url);
+      // Permitir solo HTTP(S) o data URLs
+      if (parsedUrl.protocol !== 'http:' && parsedUrl.protocol !== 'https:' && !url.startsWith('data:image/')) {
+        return false;
+      }
+
+      // Validar extensiones de imagen comunes
+      const imageExtensions = ['.jpg', '.jpeg', '.png', '.gif', '.webp', '.svg', '.bmp'];
+      const pathname = parsedUrl.pathname.toLowerCase();
+
+      // Si es data URL, validar que sea de imagen
+      if (url.startsWith('data:image/')) {
+        return true;
+      }
+
+      // Verificar extensión
+      return imageExtensions.some(ext => pathname.endsWith(ext));
+    } catch {
+      return false;
+    }
+  }
+
+  /**
+   * Genera una firma con imagen de fondo de ejemplo
+   */
+  generateSampleSignatureWithBackground(
+    name: string,
+    title: string,
+    company: string,
+    backgroundImageUrl?: string
+  ): string {
+    return this.generateSignatureHtml({
+      userId: '',
+      name,
+      title,
+      company,
+      backgroundImageUrl,
+      backgroundColor: backgroundImageUrl ? undefined : '#f8f9fa',
+      backgroundSize: 'cover',
+      backgroundPosition: 'center',
+      padding: '20px',
+      borderRadius: '8px',
+      includeAvatar: false
+    });
   }
 }
 

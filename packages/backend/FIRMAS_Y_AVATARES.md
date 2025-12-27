@@ -14,6 +14,9 @@ Las firmas de correo se agregan automáticamente al enviar correos electrónicos
 - **Firma HTML personalizada**: Los usuarios pueden configurar su firma en formato HTML
 - **Generación automática de firmas**: Se puede generar una firma profesional a partir de datos estructurados (nombre, título, empresa, teléfono, sitio web)
 - **Integración con avatares**: Las firmas pueden incluir avatares del usuario
+- **Imágenes de fondo**: Soporte para imágenes de fondo personalizadas en las firmas
+- **Estilos personalizables**: Control de padding, border-radius, color de fondo, tamaño y posición de imagen
+- **Overlay automático**: Cuando se usa imagen de fondo, se agrega un overlay semitransparente para mejorar la legibilidad
 - **Inserción automática**: Las firmas se agregan automáticamente al final de los correos enviados
 
 #### Endpoints de API:
@@ -22,6 +25,8 @@ Las firmas de correo se agregan automáticamente al enviar correos electrónicos
 GET    /user-settings/signature              - Obtener firma del usuario
 PUT    /user-settings/signature              - Actualizar firma del usuario
 POST   /user-settings/signature/generate     - Generar firma HTML desde datos estructurados
+POST   /user-settings/signature/sample       - Generar firma de ejemplo con imagen de fondo
+POST   /user-settings/validate-image-url     - Validar URL de imagen
 ```
 
 #### Ejemplo de uso:
@@ -42,6 +47,37 @@ POST /user-settings/signature/generate
   "phone": "+1 234 567 8900",
   "website": "https://miempresa.com",
   "includeAvatar": true
+}
+
+// Generar firma con imagen de fondo
+POST /user-settings/signature/generate
+{
+  "name": "Juan Pérez",
+  "title": "Desarrollador Senior",
+  "company": "Mi Empresa",
+  "phone": "+1 234 567 8900",
+  "website": "https://miempresa.com",
+  "backgroundImageUrl": "https://example.com/background.jpg",
+  "backgroundSize": "cover",
+  "backgroundPosition": "center",
+  "backgroundColor": "#f8f9fa",
+  "padding": "20px",
+  "borderRadius": "8px"
+}
+
+// Generar firma de ejemplo
+POST /user-settings/signature/sample
+{
+  "name": "María García",
+  "title": "CEO",
+  "company": "Tech Company",
+  "backgroundImageUrl": "https://example.com/gradient.png"
+}
+
+// Validar URL de imagen
+POST /user-settings/validate-image-url
+{
+  "url": "https://example.com/image.jpg"
 }
 ```
 
@@ -223,10 +259,69 @@ Se recomienda probar:
 3. **Configuración de avatares**: Probar los tres tipos de avatares
 4. **Generación de firmas**: Probar la generación automática de firmas HTML
 
+## Imágenes de Fondo en Firmas
+
+### Características
+
+Las firmas ahora soportan imágenes de fondo personalizadas con las siguientes opciones:
+
+#### Propiedades disponibles:
+
+- **backgroundImageUrl**: URL de la imagen de fondo (HTTPS, HTTP o data URL)
+- **backgroundColor**: Color de fondo sólido (hex, rgb, hsl)
+- **backgroundSize**: Tamaño de la imagen (`cover`, `contain`, `auto`)
+- **backgroundPosition**: Posición de la imagen (ej: `center`, `top left`)
+- **backgroundRepeat**: Repetición de la imagen (`no-repeat`, `repeat`, `repeat-x`, `repeat-y`)
+- **padding**: Espaciado interno (ej: `20px`, `15px 30px`)
+- **borderRadius**: Radio de borde para esquinas redondeadas (ej: `8px`, `12px`)
+
+#### Overlay automático
+
+Cuando se configura una imagen de fondo, el sistema agrega automáticamente un overlay semitransparente blanco (85% opacidad) para mejorar la legibilidad del texto. Esto asegura que el contenido de la firma sea legible independientemente del fondo.
+
+#### Validación de URLs
+
+El sistema valida automáticamente las URLs de imágenes:
+- Acepta protocolos: `http://`, `https://`, `data:image/`
+- Valida extensiones: `.jpg`, `.jpeg`, `.png`, `.gif`, `.webp`, `.svg`, `.bmp`
+- Data URLs deben comenzar con `data:image/`
+
+### Ejemplo de uso completo
+
+```javascript
+// Firma con imagen de fondo
+const signature = {
+  name: "Ana Martínez",
+  title: "Directora de Ventas",
+  company: "Acme Corp",
+  phone: "+34 600 123 456",
+  website: "https://acme.com",
+  includeAvatar: true,
+  avatarUrl: "https://gravatar.com/avatar/...",
+  backgroundImageUrl: "https://images.unsplash.com/photo-gradient",
+  backgroundColor: "#f0f0f0", // Fallback si la imagen no carga
+  backgroundSize: "cover",
+  backgroundPosition: "center center",
+  backgroundRepeat: "no-repeat",
+  padding: "25px",
+  borderRadius: "10px"
+};
+```
+
+### Mejores prácticas
+
+1. **Contraste**: Usa imágenes con suficiente contraste o colores suaves
+2. **Tamaño**: Las imágenes deben ser ligeras (< 500KB) para carga rápida
+3. **Formato**: Prefiere WebP o JPEG para fotografías, PNG para gráficos
+4. **Posición**: `center` suele funcionar mejor para la mayoría de imágenes
+5. **Fallback**: Siempre configura un `backgroundColor` como respaldo
+
 ## Próximas Mejoras
 
 - [ ] Soporte para múltiples firmas (personal, profesional, etc.)
 - [ ] Editor visual de firmas en el frontend
-- [ ] Plantillas de firmas predefinidas
+- [ ] Plantillas de firmas predefinidas con imágenes de fondo
 - [ ] Subida de imágenes para avatares personalizados
-- [ ] Soporte para firmas con imágenes embebidas
+- [ ] Galería de imágenes de fondo predefinidas
+- [ ] Ajuste de opacidad del overlay
+- [ ] Soporte para gradientes CSS como fondo

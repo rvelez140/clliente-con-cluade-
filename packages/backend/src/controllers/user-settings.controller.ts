@@ -71,6 +71,12 @@ export class UserSettingsController {
         ...req.body,
       };
 
+      // Validar URL de imagen de fondo si existe
+      if (signatureData.backgroundImageUrl && !emailSignatureService.isValidImageUrl(signatureData.backgroundImageUrl)) {
+        res.status(400).json({ error: 'URL de imagen de fondo inválida' });
+        return;
+      }
+
       const signatureHtml = emailSignatureService.generateSignatureHtml(signatureData);
 
       res.json({ signature: signatureHtml });
@@ -179,6 +185,59 @@ export class UserSettingsController {
     } catch (error) {
       console.error('Error generando preview de avatar:', error);
       res.status(500).json({ error: 'Error generando preview de avatar' });
+    }
+  }
+
+  /**
+   * Genera una firma de ejemplo con imagen de fondo
+   */
+  async generateSignatureSample(req: Request, res: Response): Promise<void> {
+    try {
+      const { name, title, company, backgroundImageUrl } = req.body;
+
+      if (!name) {
+        res.status(400).json({ error: 'El nombre es requerido' });
+        return;
+      }
+
+      // Validar URL de imagen de fondo si existe
+      if (backgroundImageUrl && !emailSignatureService.isValidImageUrl(backgroundImageUrl)) {
+        res.status(400).json({ error: 'URL de imagen de fondo inválida' });
+        return;
+      }
+
+      const signatureHtml = emailSignatureService.generateSampleSignatureWithBackground(
+        name,
+        title || '',
+        company || '',
+        backgroundImageUrl
+      );
+
+      res.json({ signature: signatureHtml });
+    } catch (error) {
+      console.error('Error generando firma de ejemplo:', error);
+      res.status(500).json({ error: 'Error generando firma de ejemplo' });
+    }
+  }
+
+  /**
+   * Valida una URL de imagen
+   */
+  async validateImageUrl(req: Request, res: Response): Promise<void> {
+    try {
+      const { url } = req.body;
+
+      if (!url) {
+        res.status(400).json({ error: 'La URL es requerida' });
+        return;
+      }
+
+      const isValid = emailSignatureService.isValidImageUrl(url);
+
+      res.json({ valid: isValid });
+    } catch (error) {
+      console.error('Error validando URL de imagen:', error);
+      res.status(500).json({ error: 'Error validando URL de imagen' });
     }
   }
 }
