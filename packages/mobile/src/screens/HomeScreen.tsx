@@ -54,7 +54,7 @@ const HomeScreen = ({ navigation }: any) => {
       <Appbar.Header>
         <Appbar.Content title="Gemini Mail" />
         <Appbar.Action icon="magnify" onPress={() => {}} />
-        <Appbar.Action icon="dots-vertical" onPress={() => {}} />
+        <Appbar.Action icon="cog" onPress={() => navigation.navigate('Settings')} />
       </Appbar.Header>
 
       <FlatList
