@@ -6,13 +6,15 @@
   "scripts": {
     "dev": "concurrently \"npm run dev:backend\" \"npm run dev:electron\"",
     "dev:backend": "cd ../backend && npm run dev",
-    "dev:electron": "tsx watch src/main.ts",
+    "dev:electron": "NODE_ENV=development tsx watch src/main-enhanced.ts",
     "build": "tsc && electron-builder",
     "build:win": "tsc && electron-builder --win",
     "build:linux": "tsc && electron-builder --linux",
-    "build:all": "tsc && electron-builder --win --linux",
+    "build:mac": "tsc && electron-builder --mac",
+    "build:all": "tsc && electron-builder --win --linux --mac",
     "package": "electron-builder --dir",
-    "start": "electron ."
+    "start": "electron .",
+    "clean": "rm -rf dist release"
   },
   "build": {
     "appId": "com.geminimail.app",
