@@ -25,6 +25,9 @@ export interface ScheduledEmail {
   voiceLang?: string;
   errorMessage?: string;
   sentAt?: Date;
+  retryCount?: number;
+  maxRetries?: number;
+  nextRetryAt?: Date;
 }
 
 type ValidTone = 'formal' | 'casual' | 'friendly' | 'professional';
@@ -222,8 +225,8 @@ export class ScheduledEmailService {
     try {
       const result = await query(
         `SELECT * FROM scheduled_emails
-         WHERE status = 'pending'
-         AND scheduled_at <= NOW()
+         WHERE (status = 'pending' AND scheduled_at <= NOW())
+            OR (status = 'pending' AND retry_count > 0 AND next_retry_at IS NOT NULL AND next_retry_at <= NOW())
          ORDER BY scheduled_at ASC`
       );
 
@@ -235,6 +238,8 @@ export class ScheduledEmailService {
   }
 
   async sendScheduledEmail(scheduledEmail: ScheduledEmail): Promise<void> {
+    const startTime = Date.now();
+
     try {
       // Obtener información de la cuenta
       const accountResult = await query(
@@ -258,10 +263,12 @@ export class ScheduledEmailService {
         scheduledEmail.bccAddresses
       );
 
+      const sendTime = Date.now() - startTime;
+
       // Actualizar estado a enviado
       await query(
         `UPDATE scheduled_emails
-         SET status = 'sent', sent_at = NOW()
+         SET status = 'sent', sent_at = NOW(), retry_count = 0
          WHERE id = $1`,
         [scheduledEmail.id]
       );
@@ -273,6 +280,11 @@ export class ScheduledEmailService {
         [scheduledEmail.id]
       );
 
+      // Registrar métricas
+      await this.recordMetric(scheduledEmail.userId, scheduledEmail.accountId, 'sent', sendTime);
+
+      console.log(`✓ Correo programado ID: ${scheduledEmail.id} enviado exitosamente en ${sendTime}ms`);
+
       // Si tiene recurrencia, crear el siguiente correo
       if (scheduledEmail.recurrence && scheduledEmail.recurrence !== 'none') {
         await this.createRecurringEmail(scheduledEmail);
@@ -280,22 +292,115 @@ export class ScheduledEmailService {
     } catch (error) {
       console.error('Error enviando correo programado:', error);
 
-      // Actualizar estado a fallido
-      await query(
-        `UPDATE scheduled_emails
-         SET status = 'failed', error_message = $1
-         WHERE id = $2`,
-        [error instanceof Error ? error.message : 'Error desconocido', scheduledEmail.id]
-      );
+      const currentRetryCount = scheduledEmail.retryCount || 0;
+      const maxRetries = scheduledEmail.maxRetries || 3;
 
-      // Registrar en historial
-      await query(
-        `INSERT INTO scheduled_email_history (scheduled_email_id, sent_at, status, error_message)
-         VALUES ($1, NOW(), 'failed', $2)`,
-        [scheduledEmail.id, error instanceof Error ? error.message : 'Error desconocido']
-      );
+      // Si aún quedan reintentos
+      if (currentRetryCount < maxRetries) {
+        const nextRetryCount = currentRetryCount + 1;
+        const nextRetryDelay = this.calculateRetryDelay(nextRetryCount);
+        const nextRetryAt = new Date(Date.now() + nextRetryDelay);
+
+        console.log(`⚠ Reintento ${nextRetryCount}/${maxRetries} programado para ${nextRetryAt.toISOString()}`);
+
+        // Actualizar para reintentar más tarde
+        await query(
+          `UPDATE scheduled_emails
+           SET retry_count = $1,
+               next_retry_at = $2,
+               error_message = $3
+           WHERE id = $4`,
+          [
+            nextRetryCount,
+            nextRetryAt,
+            error instanceof Error ? error.message : 'Error desconocido',
+            scheduledEmail.id
+          ]
+        );
+
+        // Registrar intento fallido en historial
+        await query(
+          `INSERT INTO scheduled_email_history (scheduled_email_id, sent_at, status, error_message)
+           VALUES ($1, NOW(), 'failed', $2)`,
+          [scheduledEmail.id, `Intento ${nextRetryCount}: ${error instanceof Error ? error.message : 'Error desconocido'}`]
+        );
+      } else {
+        // Se agotaron los reintentos, marcar como fallido permanentemente
+        console.error(`✗ Correo programado ID: ${scheduledEmail.id} falló después de ${maxRetries} reintentos`);
+
+        await query(
+          `UPDATE scheduled_emails
+           SET status = 'failed',
+               error_message = $1
+           WHERE id = $2`,
+          [error instanceof Error ? error.message : 'Error desconocido', scheduledEmail.id]
+        );
+
+        // Registrar fallo final en historial
+        await query(
+          `INSERT INTO scheduled_email_history (scheduled_email_id, sent_at, status, error_message)
+           VALUES ($1, NOW(), 'failed', $2)`,
+          [scheduledEmail.id, `Fallo final: ${error instanceof Error ? error.message : 'Error desconocido'}`]
+        );
+
+        // Registrar métrica de fallo
+        await this.recordMetric(scheduledEmail.userId, scheduledEmail.accountId, 'failed');
+      }
 
       throw error;
+    }
+  }
+
+  /**
+   * Calcula el delay para el siguiente reintento usando backoff exponencial
+   * @param retryCount - Número de reintento actual
+   * @returns Delay en milisegundos
+   */
+  private calculateRetryDelay(retryCount: number): number {
+    // Backoff exponencial: 2^retryCount minutos
+    // Reintento 1: 2 minutos
+    // Reintento 2: 4 minutos
+    // Reintento 3: 8 minutos
+    const baseDelay = 2 * 60 * 1000; // 2 minutos en ms
+    return Math.pow(2, retryCount - 1) * baseDelay;
+  }
+
+  /**
+   * Registra métricas de envío de correos
+   */
+  private async recordMetric(
+    userId: string,
+    accountId: string,
+    status: 'sent' | 'failed',
+    sendTimeMs?: number
+  ): Promise<void> {
+    try {
+      const today = new Date().toISOString().split('T')[0];
+
+      await query(
+        `INSERT INTO email_metrics (user_id, account_id, metric_type, metric_date, emails_sent, emails_failed, avg_send_time_ms)
+         VALUES ($1, $2, 'scheduled', $3, $4, $5, $6)
+         ON CONFLICT (user_id, account_id, metric_type, metric_date)
+         DO UPDATE SET
+           emails_sent = email_metrics.emails_sent + EXCLUDED.emails_sent,
+           emails_failed = email_metrics.emails_failed + EXCLUDED.emails_failed,
+           avg_send_time_ms = CASE
+             WHEN EXCLUDED.avg_send_time_ms IS NOT NULL
+             THEN (COALESCE(email_metrics.avg_send_time_ms, 0) + EXCLUDED.avg_send_time_ms) / 2
+             ELSE email_metrics.avg_send_time_ms
+           END`,
+        [
+          userId,
+          accountId,
+          today,
+          status === 'sent' ? 1 : 0,
+          status === 'failed' ? 1 : 0,
+          sendTimeMs || null
+        ]
+      );
+    } catch (error) {
+      console.error('Error registrando métrica:', error);
+      // No lanzar error, solo registrar
     }
   }
 
@@ -389,6 +494,9 @@ export class ScheduledEmailService {
       voiceLang: row.voice_lang,
       errorMessage: row.error_message,
       sentAt: row.sent_at,
+      retryCount: row.retry_count,
+      maxRetries: row.max_retries,
+      nextRetryAt: row.next_retry_at,
     };
   }
 }

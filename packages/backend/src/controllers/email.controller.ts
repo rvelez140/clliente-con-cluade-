@@ -2,6 +2,7 @@ import { Response } from 'express';
 import { AuthRequest } from '../middleware/auth.middleware';
 import emailService from '../services/email.service';
 import { query } from '../config/database';
+import passwordEncryptionService from '../services/password-encryption.service';
 
 export class EmailController {
   async getAccounts(req: AuthRequest, res: Response) {
@@ -21,12 +22,16 @@ export class EmailController {
     try {
       const { provider, email, password, imapHost, imapPort, smtpHost, smtpPort } = req.body;
 
+      // Encriptar la contraseña antes de guardarla
+      const encryptedPassword = password ? passwordEncryptionService.encrypt(password) : null;
+
       const result = await query(
         `INSERT INTO email_accounts (user_id, provider, email, password, imap_host, imap_port, smtp_host, smtp_port)
-         VALUES ($1, $2, $3, $4, $5, $6, $7, $8) RETURNING *`,
-        [req.user.id, provider, email, password, imapHost, imapPort, smtpHost, smtpPort]
+         VALUES ($1, $2, $3, $4, $5, $6, $7, $8) RETURNING id, provider, email, imap_host, imap_port, smtp_host, smtp_port`,
+        [req.user.id, provider, email, encryptedPassword, imapHost, imapPort, smtpHost, smtpPort]
       );
 
+      // No devolver la contraseña encriptada en la respuesta
       res.status(201).json(result.rows[0]);
     } catch (error: any) {
       res.status(400).json({ error: error.message });

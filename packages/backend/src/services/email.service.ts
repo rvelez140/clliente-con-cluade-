@@ -2,8 +2,26 @@ import Imap from 'imap';
 import { simpleParser, ParsedMail, AddressObject, Attachment } from 'mailparser';
 import nodemailer from 'nodemailer';
 import { EmailAccount, Email } from '../types';
+import passwordEncryptionService from './password-encryption.service';
 
 export class EmailService {
+  /**
+   * Obtiene la contraseña desencriptada de una cuenta
+   */
+  private getDecryptedPassword(account: EmailAccount): string {
+    if (!account.password) {
+      throw new Error('La cuenta no tiene contraseña configurada');
+    }
+
+    // Si la contraseña está encriptada, desencriptarla
+    if (passwordEncryptionService.isEncrypted(account.password)) {
+      return passwordEncryptionService.decrypt(account.password);
+    }
+
+    // Si no está encriptada, devolverla tal cual (compatibilidad con datos antiguos)
+    return account.password;
+  }
+
   async fetchEmails(account: EmailAccount, folder: string = 'INBOX', limit: number = 50): Promise<Email[]> {
     return new Promise((resolve, reject) => {
       const imapConfig = this.getImapConfig(account);
@@ -113,10 +131,12 @@ export class EmailService {
   }
 
   private getImapConfig(account: EmailAccount): any {
+    const password = this.getDecryptedPassword(account);
+
     if (account.provider === 'gmail') {
       return {
         user: account.email,
-        password: account.password,
+        password,
         host: 'imap.gmail.com',
         port: 993,
         tls: true,
@@ -125,7 +145,7 @@ export class EmailService {
     } else if (account.provider === 'outlook') {
       return {
         user: account.email,
-        password: account.password,
+        password,
         host: 'outlook.office365.com',
         port: 993,
         tls: true,
@@ -134,7 +154,7 @@ export class EmailService {
     } else if (account.provider === 'yahoo') {
       return {
         user: account.email,
-        password: account.password,
+        password,
         host: 'imap.mail.yahoo.com',
         port: 993,
         tls: true,
@@ -143,7 +163,7 @@ export class EmailService {
     } else if (account.provider === 'protonmail') {
       return {
         user: account.email,
-        password: account.password,
+        password,
         host: 'imap.protonmail.ch',
         port: 993,
         tls: true,
@@ -152,7 +172,7 @@ export class EmailService {
     } else {
       return {
         user: account.email,
-        password: account.password,
+        password,
         host: account.imapHost,
         port: account.imapPort,
         tls: true,
@@ -162,55 +182,54 @@ export class EmailService {
   }
 
   private getSmtpConfig(account: EmailAccount): any {
+    const password = this.getDecryptedPassword(account);
+
+    const baseConfig = {
+      pool: true, // Usar pool de conexiones
+      maxConnections: 5, // Máximo 5 conexiones simultáneas
+      maxMessages: 100, // Máximo 100 mensajes por conexión
+      rateDelta: 1000, // Tiempo entre mensajes (ms)
+      rateLimit: 5, // Máximo 5 mensajes por rateDelta
+      auth: {
+        user: account.email,
+        pass: password,
+      },
+    };
+
     if (account.provider === 'gmail') {
       return {
+        ...baseConfig,
         host: 'smtp.gmail.com',
         port: 587,
         secure: false,
-        auth: {
-          user: account.email,
-          pass: account.password,
-        },
       };
     } else if (account.provider === 'outlook') {
       return {
+        ...baseConfig,
         host: 'smtp.office365.com',
         port: 587,
         secure: false,
-        auth: {
-          user: account.email,
-          pass: account.password,
-        },
       };
     } else if (account.provider === 'yahoo') {
       return {
+        ...baseConfig,
         host: 'smtp.mail.yahoo.com',
         port: 587,
         secure: false,
-        auth: {
-          user: account.email,
-          pass: account.password,
-        },
       };
     } else if (account.provider === 'protonmail') {
       return {
+        ...baseConfig,
         host: 'smtp.protonmail.ch',
         port: 587,
         secure: false,
-        auth: {
-          user: account.email,
-          pass: account.password,
-        },
       };
     } else {
       return {
+        ...baseConfig,
         host: account.smtpHost,
         port: account.smtpPort,
         secure: false,
-        auth: {
-          user: account.email,
-          pass: account.password,
-        },
       };
     }
   }
