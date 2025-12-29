@@ -48,6 +48,35 @@ interface LinkMetadata {
   previewUrl?: string;
 }
 
+interface PerplexityApiResponse {
+  choices?: Array<{
+    message?: {
+      content?: string;
+    };
+  }>;
+  citations?: Array<{
+    title?: string;
+    snippet?: string;
+    text?: string;
+    url: string;
+    published_date?: string;
+  }>;
+  related_questions?: string[];
+}
+
+interface GeminiResponsePart {
+  text?: string;
+}
+
+interface LinkApiResponse {
+  title?: string;
+  description?: string;
+  image?: string;
+  icon?: string;
+  name?: string;
+  owner?: { login?: string };
+}
+
 export class PerplexityService {
   private genAI: GoogleGenerativeAI;
   private model: any;
@@ -132,7 +161,7 @@ export class PerplexityService {
       throw new Error(`Error de Perplexity: ${response.statusText}`);
     }
 
-    const data = await response.json();
+    const data = await response.json() as PerplexityApiResponse;
     const searchTime = Date.now() - startTime;
 
     // Parsear la respuesta de Perplexity
@@ -202,10 +231,10 @@ Proporciona información precisa, actual y útil.`;
         return {
           results: parsed.results?.slice(0, options.maxResults) || [],
           answer: parsed.answer,
-          relatedQueries: parsed.relatedQueries || [],
+          relatedQueries: (parsed.relatedQueries || []) as string[],
           totalResults: parsed.results?.length || 0,
           searchTime,
-          sources: [...new Set((parsed.results || []).map((r: any) => r.source))]
+          sources: [...new Set((parsed.results || []).map((r: any) => r.source))] as string[]
         };
       }
     } catch (e) {
@@ -316,12 +345,18 @@ Proporciona información precisa, actual y útil.`;
         );
 
         if (response.ok) {
-          const data = await response.json();
+          const data = await response.json() as {
+            name?: string;
+            mimeType?: string;
+            size?: string;
+            modifiedTime?: string;
+            owners?: Array<{ displayName?: string }>;
+          };
           return {
             url,
-            title: data.name,
+            title: data.name || '',
             fileName: data.name,
-            fileType: this.mimeTypeToFileType(data.mimeType),
+            fileType: this.mimeTypeToFileType(data.mimeType || ''),
             fileSize: this.formatFileSize(parseInt(data.size || '0')),
             lastModified: data.modifiedTime,
             sharedBy: data.owners?.[0]?.displayName,
@@ -414,13 +449,13 @@ Proporciona información precisa, actual y útil.`;
         });
 
         if (response.ok) {
-          const data = await response.json();
+          const data = await response.json() as { name?: string; size?: number };
           return {
             url,
-            title: data.name,
+            title: data.name || '',
             fileName: data.name,
-            fileType: this.getFileExtension(data.name),
-            fileSize: this.formatFileSize(data.size),
+            fileType: this.getFileExtension(data.name || ''),
+            fileSize: this.formatFileSize(data.size || 0),
             type: 'github',
             favicon: 'https://github.githubassets.com/favicons/favicon.svg',
             description: `${owner}/${repo}`

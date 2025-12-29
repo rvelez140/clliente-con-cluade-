@@ -14,9 +14,7 @@ const emailArrayValidator = z.array(emailValidator).min(1, 'Debe proporcionar al
  * Schema para agregar una cuenta de correo
  */
 export const addAccountSchema = z.object({
-  provider: z.enum(['gmail', 'outlook', 'yahoo', 'protonmail', 'custom'], {
-    errorMap: () => ({ message: 'Proveedor no válido' })
-  }),
+  provider: z.enum(['gmail', 'outlook', 'yahoo', 'protonmail', 'custom']),
   email: emailValidator,
   password: z.string().min(1, 'La contraseña es requerida'),
   imapHost: z.string().optional(),
@@ -171,7 +169,7 @@ export const summarizeEmailSchema = z.object({
  */
 export const fetchEmailsQuerySchema = z.object({
   folder: z.string().default('INBOX'),
-  limit: z.string().transform(Number).pipe(z.number().int().min(1).max(200)).default('50')
+  limit: z.string().optional().default('50').transform(Number).pipe(z.number().int().min(1).max(200))
 });
 
 /**
