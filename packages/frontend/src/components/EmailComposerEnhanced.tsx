@@ -26,15 +26,9 @@ import {
   Send,
   AttachFile,
   Search,
-  FormatBold,
-  FormatItalic,
-  Link as LinkIcon,
-  Delete,
-  Schedule,
-  Lock,
   Signature,
 } from '@mui/icons-material';
-import { geminiApi, emailApi, attachmentApi, searchApi, signatureApi } from '../services/api';
+import { geminiApi, emailApi, attachmentApi, searchApi } from '../services/api';
 import AttachmentWarningDialog from './AttachmentWarningDialog';
 import SmartLinkPreview from './SmartLinkPreview';
 import SearchBar from './SearchBar';
@@ -43,7 +37,11 @@ interface EmailComposerEnhancedProps {
   open: boolean;
   onClose: () => void;
   accountId?: string;
-  replyTo?: any;
+  replyTo?: {
+    from: string;
+    subject: string;
+    body: string;
+  };
   defaultSignature?: string;
 }
 
@@ -142,7 +140,7 @@ const EmailComposerEnhanced: React.FC<EmailComposerEnhancedProps> = ({
             const response = await searchApi.getLinkMetadata(url);
             const metadata = response.data;
 
-            setSmartLinks(prev => [...prev, metadata]);
+            setSmartLinks((prev: LinkMetadata[]) => [...prev, metadata]);
 
             // Insert friendly link text instead of URL
             const linkText = `[${metadata.fileName || metadata.title}]`;
@@ -172,7 +170,7 @@ const EmailComposerEnhanced: React.FC<EmailComposerEnhancedProps> = ({
       const response = await attachmentApi.preflight({
         subject,
         body,
-        attachments: attachments.map(f => ({ name: f.name })),
+        attachments: attachments.map((f: File) => ({ name: f.name })),
       });
 
       const { canSend, warning } = response.data;
@@ -215,7 +213,7 @@ const EmailComposerEnhanced: React.FC<EmailComposerEnhancedProps> = ({
       // Add smart links as proper HTML links
       if (smartLinks.length > 0) {
         finalBody += '\n\n---\nEnlaces adjuntos:\n';
-        smartLinks.forEach(link => {
+        smartLinks.forEach((link: LinkMetadata) => {
           finalBody += `• ${link.fileName || link.title}: ${link.url}\n`;
         });
       }
@@ -323,16 +321,16 @@ const EmailComposerEnhanced: React.FC<EmailComposerEnhancedProps> = ({
   const handleFileSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
     const files = e.target.files;
     if (files) {
-      setAttachments(prev => [...prev, ...Array.from(files)]);
+      setAttachments((prev: File[]) => [...prev, ...Array.from(files)]);
     }
   };
 
   const handleRemoveAttachment = (index: number) => {
-    setAttachments(prev => prev.filter((_, i) => i !== index));
+    setAttachments((prev: File[]) => prev.filter((_: File, i: number) => i !== index));
   };
 
   const handleRemoveSmartLink = (index: number) => {
-    setSmartLinks(prev => prev.filter((_, i) => i !== index));
+    setSmartLinks((prev: LinkMetadata[]) => prev.filter((_: LinkMetadata, i: number) => i !== index));
   };
 
   return (
@@ -379,9 +377,9 @@ const EmailComposerEnhanced: React.FC<EmailComposerEnhancedProps> = ({
             <Box sx={{ p: 2, bgcolor: 'grey.50' }}>
               <SearchBar
                 placeholder="Buscar información para tu correo..."
-                onSearch={(query, results) => {
+                onSearch={(_query: string, results: { answer?: string }) => {
                   if (results.answer) {
-                    setBody(prev => prev + '\n\n' + results.answer);
+                    setBody((prev: string) => prev + '\n\n' + results.answer);
                   }
                 }}
               />
@@ -395,7 +393,7 @@ const EmailComposerEnhanced: React.FC<EmailComposerEnhancedProps> = ({
                 label="Para"
                 fullWidth
                 value={to}
-                onChange={(e) => setTo(e.target.value)}
+                onChange={(e: React.ChangeEvent<HTMLInputElement>) => setTo(e.target.value)}
                 size="small"
                 placeholder="destinatario@ejemplo.com"
               />
@@ -414,14 +412,14 @@ const EmailComposerEnhanced: React.FC<EmailComposerEnhancedProps> = ({
                   label="CC"
                   fullWidth
                   value={cc}
-                  onChange={(e) => setCc(e.target.value)}
+                  onChange={(e: React.ChangeEvent<HTMLInputElement>) => setCc(e.target.value)}
                   size="small"
                 />
                 <TextField
                   label="CCO"
                   fullWidth
                   value={bcc}
-                  onChange={(e) => setBcc(e.target.value)}
+                  onChange={(e: React.ChangeEvent<HTMLInputElement>) => setBcc(e.target.value)}
                   size="small"
                 />
               </Stack>
@@ -432,7 +430,7 @@ const EmailComposerEnhanced: React.FC<EmailComposerEnhancedProps> = ({
               label="Asunto"
               fullWidth
               value={subject}
-              onChange={(e) => setSubject(e.target.value)}
+              onChange={(e: React.ChangeEvent<HTMLInputElement>) => setSubject(e.target.value)}
               sx={{ mt: 2 }}
               size="small"
             />
@@ -445,7 +443,7 @@ const EmailComposerEnhanced: React.FC<EmailComposerEnhancedProps> = ({
                 multiline
                 rows={12}
                 value={body}
-                onChange={(e) => setBody(e.target.value)}
+                onChange={(e: React.ChangeEvent<HTMLTextAreaElement>) => setBody(e.target.value)}
                 onPaste={handlePaste}
                 sx={{
                   '& .MuiOutlinedInput-root': {
@@ -480,7 +478,7 @@ const EmailComposerEnhanced: React.FC<EmailComposerEnhancedProps> = ({
                   Enlaces compartidos ({smartLinks.length})
                 </Typography>
                 <Stack spacing={1}>
-                  {smartLinks.map((link, index) => (
+                {smartLinks.map((link: LinkMetadata, index: number) => (
                     <SmartLinkPreview
                       key={index}
                       url={link.url}
@@ -498,7 +496,7 @@ const EmailComposerEnhanced: React.FC<EmailComposerEnhancedProps> = ({
                   Archivos adjuntos ({attachments.length})
                 </Typography>
                 <Box sx={{ display: 'flex', gap: 1, flexWrap: 'wrap' }}>
-                  {attachments.map((file, index) => (
+                  {attachments.map((file: File, index: number) => (
                     <Chip
                       key={index}
                       icon={<AttachFile />}
@@ -530,7 +528,7 @@ const EmailComposerEnhanced: React.FC<EmailComposerEnhancedProps> = ({
               <Chip
                 icon={<AutoAwesome />}
                 label="Asistente IA"
-                onClick={(e) => setAiAnchor(e.currentTarget)}
+                onClick={(e: React.MouseEvent<HTMLDivElement>) => setAiAnchor(e.currentTarget)}
                 color="primary"
                 variant="outlined"
                 size="small"

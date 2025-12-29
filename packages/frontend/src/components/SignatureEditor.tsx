@@ -10,7 +10,6 @@ import {
   Grid,
   Typography,
   Card,
-  CardContent,
   CardActionArea,
   Tabs,
   Tab,
@@ -20,15 +19,14 @@ import {
   InputLabel,
   Select,
   MenuItem,
-  Switch,
-  FormControlLabel,
   Snackbar,
   Alert,
+  SelectChangeEvent,
 } from '@mui/material';
 import {
   Palette,
   TextFields,
-  Image,
+  Image as ImageIcon,
   Preview,
   Save,
   AutoAwesome,
@@ -217,7 +215,7 @@ const SignatureEditor: React.FC<SignatureEditorProps> = ({
               >
                 <Tab icon={<TextFields />} label="Datos" />
                 <Tab icon={<Palette />} label="Estilo" />
-                <Tab icon={<Image />} label="Plantilla" />
+                <Tab icon={<ImageIcon />} label="Plantilla" />
                 <Tab icon={<AutoAwesome />} label="IA" />
               </Tabs>
 
@@ -412,7 +410,7 @@ const SignatureEditor: React.FC<SignatureEditorProps> = ({
                         size="small"
                         type="color"
                         value={style.primaryColor}
-                        onChange={(e) =>
+                        onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
                           setStyle({ ...style, primaryColor: e.target.value })
                         }
                         InputProps={{
@@ -427,7 +425,7 @@ const SignatureEditor: React.FC<SignatureEditorProps> = ({
                         size="small"
                         type="color"
                         value={style.secondaryColor}
-                        onChange={(e) =>
+                        onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
                           setStyle({ ...style, secondaryColor: e.target.value })
                         }
                         InputProps={{
@@ -449,7 +447,7 @@ const SignatureEditor: React.FC<SignatureEditorProps> = ({
                         <Select
                           value={style.fontFamily}
                           label="Fuente"
-                          onChange={(e) =>
+                          onChange={(e: SelectChangeEvent) =>
                             setStyle({ ...style, fontFamily: e.target.value })
                           }
                         >
@@ -468,7 +466,7 @@ const SignatureEditor: React.FC<SignatureEditorProps> = ({
                         <Select
                           value={style.fontSize}
                           label="Tamaño de fuente"
-                          onChange={(e) =>
+                          onChange={(e: SelectChangeEvent) =>
                             setStyle({ ...style, fontSize: e.target.value })
                           }
                         >
@@ -554,7 +552,7 @@ const SignatureEditor: React.FC<SignatureEditorProps> = ({
                     multiline
                     rows={4}
                     value={aiPrompt}
-                    onChange={(e) => setAiPrompt(e.target.value)}
+                    onChange={(e: React.ChangeEvent<HTMLTextAreaElement>) => setAiPrompt(e.target.value)}
                     placeholder="Ej: Quiero una firma profesional y moderna para un desarrollador de software, con colores azules y mis redes sociales..."
                     sx={{ mb: 2 }}
                   />

@@ -13,7 +13,6 @@ import {
   CloudQueue,
   GitHub,
   Description,
-  Folder,
   Link as LinkIcon,
   Close,
   OpenInNew,

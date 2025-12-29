@@ -24,7 +24,6 @@ import {
   School,
   Newspaper,
   Clear,
-  Tune,
 } from '@mui/icons-material';
 import { searchApi } from '../services/api';
 import { useDebounce } from '../hooks/useDebounce';
@@ -37,8 +36,13 @@ interface SearchResult {
   relevanceScore: number;
 }
 
+interface SearchResponse {
+  results?: SearchResult[];
+  answer?: string;
+}
+
 interface SearchBarProps {
-  onSearch?: (query: string, results: any) => void;
+  onSearch?: (query: string, results: SearchResponse) => void;
   placeholder?: string;
   showTypeSelector?: boolean;
   defaultSearchType?: 'web' | 'academic' | 'news';
@@ -108,7 +112,7 @@ const SearchBar: React.FC<SearchBarProps> = ({
       setAnswer(response.data.answer || '');
 
       // Save to recent searches
-      const updated = [searchQuery, ...recentSearches.filter(s => s !== searchQuery)].slice(0, 5);
+      const updated = [searchQuery, ...recentSearches.filter((s: string) => s !== searchQuery)].slice(0, 5);
       setRecentSearches(updated);
       localStorage.setItem('recentSearches', JSON.stringify(updated));
 
@@ -157,7 +161,7 @@ const SearchBar: React.FC<SearchBarProps> = ({
           fullWidth
           inputRef={inputRef}
           value={query}
-          onChange={(e) => setQuery(e.target.value)}
+          onChange={(e: React.ChangeEvent<HTMLInputElement>) => setQuery(e.target.value)}
           onKeyDown={handleKeyDown}
           onFocus={() => setShowResults(true)}
           placeholder={placeholder}
@@ -229,7 +233,7 @@ const SearchBar: React.FC<SearchBarProps> = ({
                     size="small"
                     variant={searchType === type ? 'filled' : 'outlined'}
                     color={searchType === type ? 'primary' : 'default'}
-                    onClick={() => setSearchType(type as any)}
+                    onClick={() => setSearchType(type as 'web' | 'academic' | 'news')}
                   />
                 ))}
               </Box>
@@ -239,7 +243,7 @@ const SearchBar: React.FC<SearchBarProps> = ({
             {suggestions.length > 0 && (
               <>
                 <List dense>
-                  {suggestions.map((suggestion, index) => (
+                  {suggestions.map((suggestion: string, index: number) => (
                     <ListItem
                       key={index}
                       button
@@ -266,7 +270,7 @@ const SearchBar: React.FC<SearchBarProps> = ({
                   Búsquedas recientes
                 </Typography>
                 <List dense>
-                  {recentSearches.map((search, index) => (
+                  {recentSearches.map((search: string, index: number) => (
                     <ListItem
                       key={index}
                       button
@@ -299,7 +303,7 @@ const SearchBar: React.FC<SearchBarProps> = ({
             {/* Search Results */}
             {results.length > 0 && (
               <List>
-                {results.map((result, index) => (
+                {results.map((result: SearchResult, index: number) => (
                   <ListItem
                     key={index}
                     button
