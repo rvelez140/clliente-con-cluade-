@@ -6,6 +6,7 @@ import oauthRoutes from './oauth.routes';
 import aiRoutes from './ai.routes';
 import encryptionRoutes from './encryption.routes';
 import scheduledEmailRoutes from './scheduled-email.routes';
+import gmailFeaturesRoutes from './gmail-features.routes';
 
 const router = Router();
 
@@ -17,8 +18,20 @@ router.use('/ai', aiRoutes);
 router.use('/encryption', encryptionRoutes);
 router.use('/api', scheduledEmailRoutes);
 
+// Gmail Competition Features - Full suite of Gmail-like functionality
+router.use('/features', gmailFeaturesRoutes);
+
 router.get('/health', (req, res) => {
-  res.json({ status: 'ok', timestamp: new Date().toISOString() });
+  res.json({
+    status: 'ok',
+    version: '2.0.0',
+    features: [
+      'labels', 'filters', 'contacts', 'snooze', 'undo-send',
+      'confidential-mode', 'read-receipts', 'nudges', 'tasks',
+      'calendar', 'advanced-search', 'analytics', 'keyboard-shortcuts'
+    ],
+    timestamp: new Date().toISOString()
+  });
 });
 
 export default router;
