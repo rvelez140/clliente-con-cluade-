@@ -44,7 +44,7 @@ const SmartLinkPreview: React.FC<SmartLinkPreviewProps> = ({
 }) => {
   const [metadata, setMetadata] = useState<LinkMetadata | null>(null);
   const [loading, setLoading] = useState(true);
-  const [error, setError] = useState(false);
+  const [, setError] = useState(false);
 
   useEffect(() => {
     const fetchMetadata = async () => {

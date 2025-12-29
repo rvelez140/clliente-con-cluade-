@@ -26,7 +26,7 @@ import {
   Send,
   AttachFile,
   Search,
-  Signature,
+  DriveFileRenameOutline,
 } from '@mui/icons-material';
 import { geminiApi, emailApi, attachmentApi, searchApi } from '../services/api';
 import AttachmentWarningDialog from './AttachmentWarningDialog';
@@ -551,7 +551,7 @@ const EmailComposerEnhanced: React.FC<EmailComposerEnhancedProps> = ({
                 size="small"
               />
               <Chip
-                icon={<Signature />}
+                icon={<DriveFileRenameOutline />}
                 label="Firma"
                 variant="outlined"
                 size="small"
