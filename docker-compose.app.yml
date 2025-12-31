@@ -1,0 +1,140 @@
+version: '3.8'
+
+# Application services - Backend and Frontend
+# Connects to external infrastructure services
+# Usage: docker-compose -f docker-compose.app.yml up -d
+
+services:
+  backend:
+    build:
+      context: ./packages/backend
+      dockerfile: Dockerfile
+      args:
+        NODE_ENV: production
+    image: gemini-mail-backend:latest
+    container_name: gemini-mail-backend
+    restart: unless-stopped
+    environment:
+      NODE_ENV: production
+      PORT: ${BACKEND_PORT:-3000}
+      # Database connection
+      DB_HOST: ${DB_HOST:-postgres}
+      DB_PORT: ${DB_PORT:-5432}
+      DB_NAME: ${DB_NAME:-gemini_mail}
+      DB_USER: ${DB_USER:-gemini_user}
+      DB_PASSWORD_FILE: /run/secrets/db_password
+      # Redis connection
+      REDIS_HOST: ${REDIS_HOST:-redis}
+      REDIS_PORT: ${REDIS_PORT:-6379}
+      REDIS_PASSWORD_FILE: /run/secrets/redis_password
+      # JWT Secret
+      JWT_SECRET_FILE: /run/secrets/jwt_secret
+      # Gemini API
+      GEMINI_API_KEY_FILE: /run/secrets/gemini_api_key
+      # OAuth2 (optional)
+      GMAIL_CLIENT_ID: ${GMAIL_CLIENT_ID:-}
+      GMAIL_CLIENT_SECRET_FILE: /run/secrets/gmail_client_secret
+      GMAIL_REDIRECT_URI: ${GMAIL_REDIRECT_URI:-}
+      MICROSOFT_CLIENT_ID: ${MICROSOFT_CLIENT_ID:-}
+      MICROSOFT_CLIENT_SECRET_FILE: /run/secrets/microsoft_client_secret
+      MICROSOFT_REDIRECT_URI: ${MICROSOFT_REDIRECT_URI:-}
+      # CORS
+      CORS_ORIGIN: ${CORS_ORIGIN:-http://localhost:5173}
+      # Trust proxy
+      TRUST_PROXY: "true"
+    secrets:
+      - db_password
+      - redis_password
+      - jwt_secret
+      - gemini_api_key
+      - gmail_client_secret
+      - microsoft_client_secret
+    ports:
+      - "${BACKEND_EXPOSE_PORT:-127.0.0.1:3000}:${BACKEND_PORT:-3000}"
+    networks:
+      - gemini-mail-network
+    volumes:
+      - uploads-data:/app/uploads
+      - logs-data:/app/logs
+    healthcheck:
+      test: ["CMD", "wget", "--no-verbose", "--tries=1", "--spider", "http://localhost:${BACKEND_PORT:-3000}/api/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 60s
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "10m"
+        max-file: "5"
+    deploy:
+      resources:
+        limits:
+          cpus: '1.0'
+          memory: 1G
+        reservations:
+          cpus: '0.5'
+          memory: 512M
+
+  frontend:
+    build:
+      context: ./packages/frontend
+      dockerfile: Dockerfile
+      args:
+        VITE_API_URL: ${VITE_API_URL:-/api}
+    image: gemini-mail-frontend:latest
+    container_name: gemini-mail-frontend
+    restart: unless-stopped
+    environment:
+      NGINX_PORT: ${FRONTEND_PORT:-80}
+    ports:
+      - "${FRONTEND_EXPOSE_PORT:-127.0.0.1:8080}:${FRONTEND_PORT:-80}"
+    networks:
+      - gemini-mail-network
+    depends_on:
+      backend:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD", "wget", "--no-verbose", "--tries=1", "--spider", "http://localhost:${FRONTEND_PORT:-80}"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 30s
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "10m"
+        max-file: "3"
+    deploy:
+      resources:
+        limits:
+          cpus: '0.5'
+          memory: 512M
+        reservations:
+          cpus: '0.25'
+          memory: 256M
+
+secrets:
+  db_password:
+    file: ./secrets/db_password.txt
+  redis_password:
+    file: ./secrets/redis_password.txt
+  jwt_secret:
+    file: ./secrets/jwt_secret.txt
+  gemini_api_key:
+    file: ./secrets/gemini_api_key.txt
+  gmail_client_secret:
+    file: ./secrets/gmail_client_secret.txt
+  microsoft_client_secret:
+    file: ./secrets/microsoft_client_secret.txt
+
+volumes:
+  uploads-data:
+    driver: local
+  logs-data:
+    driver: local
+
+networks:
+  gemini-mail-network:
+    external: true
+    name: gemini-mail-network

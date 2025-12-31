@@ -1,0 +1,137 @@
+version: '3.8'
+
+# Infrastructure services - Database and Redis
+# Run this separately from application services
+# Usage: docker-compose -f docker-compose.infrastructure.yml up -d
+
+services:
+  postgres:
+    image: postgres:16-alpine
+    container_name: gemini-mail-db
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: ${DB_NAME:-gemini_mail}
+      POSTGRES_USER: ${DB_USER:-gemini_user}
+      POSTGRES_PASSWORD_FILE: /run/secrets/db_password
+    secrets:
+      - db_password
+    volumes:
+      - postgres-data:/var/lib/postgresql/data
+      - ./packages/backend/src/scripts/init-db.sql:/docker-entrypoint-initdb.d/init-db.sql:ro
+      - ./backups:/backups
+    ports:
+      - "${DB_PORT:-5432}:5432"
+    networks:
+      - gemini-mail-network
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${DB_USER:-gemini_user} -d ${DB_NAME:-gemini_mail}"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 30s
+    command: >
+      postgres
+      -c max_connections=200
+      -c shared_buffers=256MB
+      -c effective_cache_size=1GB
+      -c maintenance_work_mem=64MB
+      -c checkpoint_completion_target=0.9
+      -c wal_buffers=16MB
+      -c default_statistics_target=100
+      -c random_page_cost=1.1
+      -c effective_io_concurrency=200
+      -c work_mem=2621kB
+      -c min_wal_size=1GB
+      -c max_wal_size=4GB
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "10m"
+        max-file: "3"
+
+  redis:
+    image: redis:7-alpine
+    container_name: gemini-mail-redis
+    restart: unless-stopped
+    command: >
+      redis-server
+      --appendonly yes
+      --requirepass $(cat /run/secrets/redis_password)
+      --maxmemory 256mb
+      --maxmemory-policy allkeys-lru
+      --save 900 1
+      --save 300 10
+      --save 60 10000
+    secrets:
+      - redis_password
+    volumes:
+      - redis-data:/data
+      - ./redis-config:/usr/local/etc/redis:ro
+    ports:
+      - "${REDIS_PORT:-6379}:6379"
+    networks:
+      - gemini-mail-network
+    healthcheck:
+      test: ["CMD", "redis-cli", "--no-auth-warning", "-a", "$(cat /run/secrets/redis_password)", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 20s
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "10m"
+        max-file: "3"
+
+  # PostgreSQL backup service (runs daily at 2 AM)
+  postgres-backup:
+    image: postgres:16-alpine
+    container_name: gemini-mail-db-backup
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: ${DB_NAME:-gemini_mail}
+      POSTGRES_USER: ${DB_USER:-gemini_user}
+      PGPASSWORD_FILE: /run/secrets/db_password
+      BACKUP_RETENTION_DAYS: ${BACKUP_RETENTION_DAYS:-7}
+    secrets:
+      - db_password
+    volumes:
+      - ./backups:/backups
+      - ./scripts/backup-db.sh:/backup-db.sh:ro
+    networks:
+      - gemini-mail-network
+    depends_on:
+      postgres:
+        condition: service_healthy
+    entrypoint: ["/bin/sh", "-c"]
+    command:
+      - |
+        echo "Backup service started. Scheduling daily backups at 2 AM..."
+        while true; do
+          current_time=$$(date +%H:%M)
+          if [ "$$current_time" = "02:00" ]; then
+            echo "Starting backup at $$(date)"
+            sh /backup-db.sh
+          fi
+          sleep 60
+        done
+
+secrets:
+  db_password:
+    file: ./secrets/db_password.txt
+  redis_password:
+    file: ./secrets/redis_password.txt
+
+volumes:
+  postgres-data:
+    driver: local
+  redis-data:
+    driver: local
+
+networks:
+  gemini-mail-network:
+    name: gemini-mail-network
+    driver: bridge
+    ipam:
+      config:
+        - subnet: 172.25.0.0/16
