@@ -281,7 +281,7 @@ export class ScheduledEmailService {
       );
 
       // Registrar métricas
-      await this.recordMetric(scheduledEmail.userId, scheduledEmail.accountId, 'sent', sendTime);
+      await this.recordMetric(String(scheduledEmail.userId), String(scheduledEmail.accountId), 'sent', sendTime);
 
       console.log(`✓ Correo programado ID: ${scheduledEmail.id} enviado exitosamente en ${sendTime}ms`);
 
@@ -344,7 +344,7 @@ export class ScheduledEmailService {
         );
 
         // Registrar métrica de fallo
-        await this.recordMetric(scheduledEmail.userId, scheduledEmail.accountId, 'failed');
+        await this.recordMetric(String(scheduledEmail.userId), String(scheduledEmail.accountId), 'failed');
       }
 
       throw error;

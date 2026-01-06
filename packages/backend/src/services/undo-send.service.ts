@@ -1,4 +1,4 @@
-import { pool } from '../config/database';
+import pool from '../config/database';
 import { v4 as uuidv4 } from 'uuid';
 import logger from '../config/logger';
 import cron from 'node-cron';

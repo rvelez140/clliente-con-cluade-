@@ -8,6 +8,9 @@ import encryptionRoutes from './encryption.routes';
 import scheduledEmailRoutes from './scheduled-email.routes';
 import gmailFeaturesRoutes from './gmail-features.routes';
 import outlookFeaturesRoutes from './outlook-features.routes';
+import searchRoutes from './search.routes';
+import attachmentRoutes from './attachment.routes';
+import signatureRoutes from './signature.routes';
 
 const router = Router();
 
@@ -25,10 +28,19 @@ router.use('/features', gmailFeaturesRoutes);
 // Outlook Competition Features - Full suite of Outlook-like functionality
 router.use('/outlook', outlookFeaturesRoutes);
 
+// Perplexity Search & Smart Links
+router.use('/search', searchRoutes);
+
+// Attachment Detection
+router.use('/attachment', attachmentRoutes);
+
+// Email Signature Management
+router.use('/signature', signatureRoutes);
+
 router.get('/health', (req, res) => {
   res.json({
     status: 'ok',
-    version: '3.0.0',
+    version: '4.0.0',
     gmailFeatures: [
       'labels', 'filters', 'contacts', 'snooze', 'undo-send',
       'confidential-mode', 'read-receipts', 'nudges', 'tasks',
@@ -38,6 +50,10 @@ router.get('/health', (req, res) => {
       'focused-inbox', 'quick-steps', 'sweep', 'mentions', 'voting-buttons',
       'follow-up-flags', 'categories', 'quick-parts', 'auto-text',
       'resources', 'dictation', 'immersive-reader'
+    ],
+    newFeatures: [
+      'perplexity-search', 'smart-clipboard-links', 'attachment-detector',
+      'advanced-signatures', 'link-preview'
     ],
     timestamp: new Date().toISOString()
   });
